@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
 <title>Wedding Ledger</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Source+Sans+3:wght@400;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
@@ -18,28 +19,7 @@
     --grey2:#efece7;
     --dec:#ece7f5; --dec2:#5a4a8a; --noteBg:#fffdf9; --doneBg:#fcfbf8;
     --radius:12px;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#efe9e0; --ink2:#c2b8ab; --ink3:#8f867c;
-      --paper:#1c1917; --card:#26221f; --line:#3a342e; --line2:#4a423a;
-      --sand:#c9a06f; --sand2:#3a2f22; --sand3:#dcb98a;
-      --green:#8fcaa0; --green2:#22332a;
-      --red:#e08a8a; --red2:#3d2626;
-      --amber:#e0b060; --amber2:#3a3020;
-      --blue:#9fb8dd; --blue2:#25303f;
-      --grey2:#33302c; --dec:#33304a; --dec2:#c3b6e6; --noteBg:#2b2724; --doneBg:#211e1b;
-    }
-  }
-  :root[data-theme="dark"]{
-      --ink:#efe9e0; --ink2:#c2b8ab; --ink3:#8f867c;
-      --paper:#1c1917; --card:#26221f; --line:#3a342e; --line2:#4a423a;
-      --sand:#c9a06f; --sand2:#3a2f22; --sand3:#dcb98a;
-      --green:#8fcaa0; --green2:#22332a;
-      --red:#e08a8a; --red2:#3d2626;
-      --amber:#e0b060; --amber2:#3a3020;
-      --blue:#9fb8dd; --blue2:#25303f;
-      --grey2:#33302c; --dec:#33304a; --dec2:#c3b6e6; --noteBg:#2b2724; --doneBg:#211e1b;
+    color-scheme:light only;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
@@ -116,16 +96,80 @@
   .who b{color:var(--ink)}
   .who button{font:inherit;font-size:12px;background:none;border:0;color:var(--sand3);cursor:pointer;text-decoration:underline;padding:0}
   .tag.by{background:var(--sand2);color:var(--sand3)}
-  details.log{margin:6px 0 18px;font-size:13px;color:var(--ink2)}
-  details.log summary{cursor:pointer;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
-  details.log ul{margin:8px 0 0;padding-left:18px;display:grid;gap:3px}
+  .sync{flex-wrap:wrap}
+  .linkish{font:inherit;font-size:13px;background:none;border:0;padding:0;color:var(--sand3);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .linkish .n{display:inline-block;margin-left:5px;font-size:11px;line-height:1;padding:3px 6px;border-radius:10px;background:var(--sand3);color:var(--card);text-decoration:none}
+
+  /* floating button */
+  .fab{position:fixed;right:18px;bottom:18px;z-index:30;width:54px;height:54px;border-radius:50%;border:0;background:var(--ink);color:var(--paper);cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 18px rgba(43,38,34,.28)}
+  .fab svg{display:block}
+  .fab-badge{position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--sand3);color:var(--card);font-size:11px;font-weight:600;line-height:20px;text-align:center;border:2px solid var(--paper)}
+  body.drawer-open .fab{opacity:0;pointer-events:none}
+
+  /* drawer */
+  .scrim{position:fixed;inset:0;z-index:39;background:rgba(28,25,23,.32);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+  .drawer{position:fixed;top:0;right:0;bottom:0;z-index:40;width:344px;max-width:100%;background:var(--card);border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(100%);visibility:hidden;transition:transform .24s ease,visibility .24s}
+  body.drawer-open .drawer{transform:none;visibility:visible}
+  body.drawer-open:not(.docked) .scrim{opacity:1;visibility:visible}
+  .drawer-head{display:flex;align-items:center;gap:8px;padding:14px 14px 12px;border-bottom:1px solid var(--line)}
+  .drawer-head .seg{flex:1;display:flex}
+  .drawer-head .seg button{flex:1;padding:8px 10px}
+  .tab-n{display:inline-block;margin-left:4px;font-size:10.5px;line-height:1;padding:3px 6px;border-radius:10px;background:var(--sand3);color:var(--card)}
+  .seg button.on .tab-n{background:var(--paper);color:var(--ink)}
+  .drawer-x{font:inherit;font-size:22px;line-height:1;width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:var(--ink2);cursor:pointer}
+  .drawer-x:hover{background:var(--grey2)}
+  .drawer-body{flex:1;overflow-y:auto;padding:10px 10px 24px;overscroll-behavior:contain}
+
+  .toc-row{display:block;width:100%;text-align:left;font:inherit;color:var(--ink);background:none;border:0;border-left:3px solid transparent;border-radius:8px;padding:10px 12px 11px;cursor:pointer}
+  .toc-row:hover{background:var(--paper)}
+  .toc-row[aria-current="true"]{background:var(--sand2);border-left-color:var(--sand)}
+  .toc-name{display:block;font-family:"Fraunces",Georgia,serif;font-size:15.5px;line-height:1.3}
+  .toc-meta{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;margin-top:3px;font-size:12px;color:var(--ink3)}
+  .toc-meta .od{color:var(--red)}
+  .toc-meta .cash{color:var(--sand3)}
+  .strip{display:flex;gap:2px;margin-top:7px;height:7px}
+  .strip i{flex:1;min-width:2px;border-radius:1.5px;background:var(--line2)}
+  .strip i.d{background:var(--green)}
+  .strip i.s{background:var(--amber)}
+  .strip i.o{background:var(--red)}
+  .toc-key{display:flex;flex-wrap:wrap;gap:10px;font-size:11.5px;color:var(--ink3);padding:4px 12px 10px}
+  .toc-key i{display:inline-block;width:9px;height:7px;border-radius:1.5px;margin-right:4px;vertical-align:middle}
+
+  .chg-filter{display:flex;margin:4px 2px 10px}
+  .chg-filter button{flex:1}
+  .chg-day{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:14px;color:var(--ink2);margin:14px 12px 4px}
+  .chg-list{list-style:none;margin:0;padding:0}
+  .chg{display:grid;grid-template-columns:26px 1fr auto;gap:2px 10px;width:100%;text-align:left;font:inherit;font-size:13px;line-height:1.4;color:var(--ink2);background:none;border:0;border-left:3px solid transparent;border-radius:8px;padding:8px 10px}
+  button.chg{cursor:pointer}
+  button.chg:hover{background:var(--paper)}
+  .chg.new{border-left-color:var(--sand)}
+  .chg .av{grid-row:1/3;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:600;background:var(--blue2);color:var(--blue)}
+  .chg .av.k{background:var(--dec);color:var(--dec2)}
+  .chg b{color:var(--ink);font-weight:600}
+  .chg .it{color:var(--ink)}
+  .chg time{font-size:11.5px;color:var(--ink3);white-space:nowrap}
+  .chg .nt{grid-column:2/4;font-size:12.5px;color:var(--ink2);border-left:2px solid var(--line2);padding:1px 0 1px 9px;margin-top:4px;font-style:italic}
+  .chg-empty{color:var(--ink3);font-size:13px;padding:14px 12px}
+
+  section.grp{scroll-margin-top:70px}
+  .item{scroll-margin-top:90px}
+  .item.flash{animation:flash 1.8s ease-out}
+  @keyframes flash{0%,35%{box-shadow:0 0 0 3px var(--sand);background:var(--sand2)}100%{box-shadow:0 0 0 0 transparent}}
+
+  @media (min-width:1100px){
+    body.drawer-open.docked .wrap{margin-right:364px}
+  }
+  @media (max-width:480px){
+    .drawer{width:100%}
+    .fab{right:14px;bottom:14px}
+  }
   .sync{font-size:13px;padding:9px 14px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line);background:var(--card);color:var(--ink2);display:flex;gap:10px;align-items:center}
   .sync i{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:none}
   .sync.shared i{background:var(--green)}
   .sync.local i{background:var(--amber)}
   .sync.saving i{background:var(--sand)}
   .chk:focus-visible,.btn:focus-visible,button:focus-visible{outline:2px solid var(--sand);outline-offset:2px}
-  @media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+  @media (prefers-reduced-motion: reduce){.bar i,.drawer,.scrim{transition:none}.item.flash{animation:none;outline:3px solid var(--sand)}}
 
   .addbox{background:var(--card);border:1px dashed var(--line2);border-radius:var(--radius);padding:14px;margin-top:8px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px}
   .addbox input,.addbox select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);min-width:0}
@@ -142,7 +186,8 @@
     .addbox input:first-child{grid-column:1/3}
   }
   @media print{
-    .controls,.addbox,.btn,footer .actions{display:none}
+    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges{display:none!important}
+    body.drawer-open.docked .wrap{margin-right:auto}
     .item{break-inside:avoid;border:1px solid #ccc}
     body{background:#fff}
   }
@@ -168,8 +213,7 @@
     <div class="count"><b id="days">0</b><span id="daysLabel">days to go</span></div>
   </header>
 
-  <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><span class="who" id="who"></span></div>
-  <details class="log" id="logbox"><summary>Recent activity</summary><ul id="log"></ul></details>
+  <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><button type="button" class="linkish" id="btnChanges">Recent changes<span class="n" id="chgCount" hidden></span></button><span class="who" id="who"></span></div>
   <div class="ready" id="ready">Everything is checked. You are 100% ready.</div>
 
   <div class="stats">
@@ -223,6 +267,30 @@
     <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Minutes" means it came from the venue meeting minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
   </footer>
 </div>
+
+<button type="button" class="fab" id="fab" aria-controls="drawer" aria-expanded="false" aria-label="Open sections and recent changes" hidden>
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="currentColor"><rect x="3.5" y="4.5" width="4" height="4" rx="1"/><rect x="10" y="5.5" width="10.5" height="2" rx="1"/><rect x="3.5" y="10" width="4" height="4" rx="1"/><rect x="10" y="11" width="10.5" height="2" rx="1"/><rect x="3.5" y="15.5" width="4" height="4" rx="1"/><rect x="10" y="16.5" width="7" height="2" rx="1"/></svg>
+  <span class="fab-badge" id="fabBadge" hidden></span>
+</button>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Sections and recent changes">
+  <div class="drawer-head">
+    <div class="seg" role="tablist" aria-label="Sidebar view">
+      <button type="button" role="tab" id="tabToc" data-tab="toc" aria-selected="true" class="on">Sections</button>
+      <button type="button" role="tab" id="tabChg" data-tab="chg" aria-selected="false">Recent changes<span class="tab-n" id="tabBadge" hidden></span></button>
+    </div>
+    <button type="button" class="drawer-x" id="drawerX" aria-label="Close sidebar">&times;</button>
+  </div>
+  <div class="drawer-body" id="paneToc" role="tabpanel" aria-labelledby="tabToc"></div>
+  <div class="drawer-body" id="paneChg" role="tabpanel" aria-labelledby="tabChg" hidden>
+    <div class="seg chg-filter" id="chgWho" aria-label="Show changes by">
+      <button type="button" data-who="" class="on">Everyone</button>
+      <button type="button" data-who="Julian">Julian</button>
+      <button type="button" data-who="Kristine">Kristine</button>
+    </div>
+    <div id="chgList"></div>
+  </div>
+</aside>
 
 <script>
 let WEDDING = null, META = {};
@@ -279,6 +347,7 @@ function setDone(id,done){state.checked[id]=done;render();write('ledger_set',{p_
 function setNote(id,text){state.notes[id]=text;clearTimeout(noteTimers[id]);noteTimers[id]=setTimeout(()=>write('ledger_set',{p_name:me.name,p_item:id,p_done:null,p_note:text},'Note saved for both of you.'),900);}
 function lock(msg){
   clearInterval(pollTimer);if(chan){try{sb.removeChannel(chan);}catch(e){}chan=null;}
+  closeDrawer(true);document.getElementById('fab').hidden=true;
   clearCreds();document.getElementById('gate').hidden=false;document.getElementById('gErr').textContent=msg||'';
 }
 async function unlock(name,pass){
@@ -286,7 +355,7 @@ async function unlock(name,pass){
   if(!sb)sb=window.supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:5}}});
   try{const d=await rpc('ledger_read');applyRead(d);}
   catch(e){me={name:'',pass:''};document.getElementById('gErr').textContent=e.message==='bad_pass'?'That passphrase is not right.':'Could not reach the ledger. Try again in a moment.';return false;}
-  writeCreds();document.getElementById('gate').hidden=true;render();
+  writeCreds();document.getElementById('gate').hidden=true;document.getElementById('fab').hidden=false;render();
   setSync('shared','Live. Changes save for both of you as you make them.');
   document.getElementById('who').innerHTML=`Signed in as <b>${me.name}</b> <button id="btnOut" type="button">not you?</button>`;
   document.getElementById('btnOut').addEventListener('click',()=>lock(''));
@@ -340,12 +409,13 @@ function render(){
     if(!rows.length)return;
     const all=items.filter(i=>i.s===sec.id),done=all.filter(isDone).length;
     const openCash=all.filter(i=>!isDone(i)&&i.pay&&i.a).reduce((s,i)=>s+i.a,0);
-    const g=document.createElement('section');g.className='grp';
+    const g=document.createElement('section');g.className='grp';g.id='sec-'+sec.id;
     g.innerHTML=`<h2>${sec.name} <small>${done} of ${all.length} done</small>${openCash?`<span class="money">${money(openCash)} still to pay</span>`:''}</h2><p class="desc">${sec.desc}</p>`;
     rows.forEach(i=>{
       shown++;
       const d=isDone(i),di=dueInfo(i);
       const el=document.createElement('div');
+      el.dataset.id=i.id;
       el.className='item'+(d?' done':'')+(!d&&di&&di.diff<=0?' overdue':(!d&&di&&di.diff<=5?' due-soon':''));
       let tags=`<span class="tag owner">${i.owner||'Both'}</span>`;
       if(di)tags+=`<span class="tag due ${d?'ok':(di.diff<0?'past':(di.diff===0?'past':''))}">${d?'was due ':'due '}${di.label}${!d&&di.diff<0?' ('+(-di.diff)+'d overdue)':(!d&&di.diff===0?' (today)':'')}</span>`;
@@ -388,7 +458,8 @@ function stats(){
   document.getElementById('barText').textContent=`${done} of ${items.length} items complete`;
   document.getElementById('barPct').textContent=pct+'%';
   document.getElementById('ready').style.display=open.length?'none':'block';
-  const lg=document.getElementById('log');lg.innerHTML=(state.log||[]).slice(0,25).map(r=>{const it=ITEMS.concat(state.custom).find(x=>x.id===r.item_id);const nm=it?it.t:(r.item_id||'');const v={check:'checked',uncheck:'unchecked',note:'noted on',add:'added',remove:'removed',reset:'reset the ledger',seed:'seeded'}[r.action]||r.action;return `<li><b>${esc(r.who)}</b> ${v} ${nm?esc(nm.slice(0,70)):''}${r.action==='note'&&r.detail?': "'+esc(r.detail.slice(0,80))+'"':''} <span style="color:var(--ink3)">${fmtAt(r.at)}</span></li>`;}).join('')||'<li>No activity yet.</li>';
+  updateBadge();
+  if(document.body.classList.contains('drawer-open'))renderDrawer();
   const de=document.getElementById('days'),dl=document.getElementById('daysLabel');
   if(!WEDDING){de.textContent='';dl.textContent='';return;}
   const dd=Math.round((WEDDING-today())/864e5);
@@ -413,6 +484,138 @@ document.getElementById('btnReset').addEventListener('click',()=>{
   if(!confirm('Reset every checkmark and note, for both of you, to the state recorded in the workbook on Sept 12?'))return;
   write('ledger_reset',{p_name:me.name},'Reset for both of you.');
 });
+
+// sidebar: sections and recent changes
+const fab=document.getElementById('fab'),scrimEl=document.getElementById('scrim');
+const SEEN_KEY='wedding-ledger-seen';
+let drawerTab='toc',chgWho='';
+const reduceMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isWide=()=>window.matchMedia('(min-width: 1100px)').matches;
+const isOpen=()=>document.body.classList.contains('drawer-open');
+function collapsedLog(){
+  const out=[];
+  (state.log||[]).forEach(r=>{
+    const prev=out[out.length-1];
+    if(prev&&r.action==='note'&&prev.action==='note'&&prev.who===r.who&&prev.item_id===r.item_id&&(new Date(prev.at)-new Date(r.at))<6e5)return;
+    out.push(r);
+  });
+  return out;
+}
+function seenAt(){try{return localStorage.getItem(SEEN_KEY)||'';}catch(e){return '';}}
+function unseenRows(){const s=seenAt(),t=s?new Date(s).getTime():0;return collapsedLog().filter(r=>r.who!==me.name&&r.action!=='seed'&&new Date(r.at).getTime()>t);}
+function markSeen(){const top=(state.log||[])[0];if(!top)return;try{localStorage.setItem(SEEN_KEY,top.at);}catch(e){}updateBadge();}
+function updateBadge(){
+  const n=unseenRows().length,txt=n>9?'9+':String(n);
+  ['fabBadge','tabBadge','chgCount'].forEach(id=>{const el=document.getElementById(id);el.hidden=!n;el.textContent=txt;});
+  fab.setAttribute('aria-label',n?`Open sections and recent changes, ${n} new`:'Open sections and recent changes');
+}
+function openDrawer(tab){
+  if(tab)drawerTab=tab;
+  document.body.classList.toggle('docked',isWide());
+  document.body.classList.add('drawer-open');
+  fab.setAttribute('aria-expanded','true');
+  renderDrawer();
+  document.getElementById(drawerTab==='toc'?'tabToc':'tabChg').focus({preventScroll:true});
+}
+function closeDrawer(silent){
+  if(!isOpen())return;
+  document.body.classList.remove('drawer-open','docked');
+  fab.setAttribute('aria-expanded','false');
+  if(!silent&&!fab.hidden)fab.focus({preventScroll:true});
+}
+function renderDrawer(){
+  document.querySelectorAll('.drawer-head [role=tab]').forEach(b=>{const on=b.dataset.tab===drawerTab;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false');});
+  document.getElementById('paneToc').hidden=drawerTab!=='toc';
+  document.getElementById('paneChg').hidden=drawerTab!=='chg';
+  if(drawerTab==='toc')renderToc();else{renderChanges();markSeen();}
+}
+function currentSectionId(){
+  let cur='';document.querySelectorAll('#list section.grp').forEach(g=>{if(g.getBoundingClientRect().top<=110)cur=g.id.slice(4);});
+  if(!cur){const f=document.querySelector('#list section.grp');if(f)cur=f.id.slice(4);}
+  return cur;
+}
+function markCurrent(id){document.querySelectorAll('#paneToc .toc-row').forEach(b=>{if(b.dataset.sec===id)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current');});}
+function renderToc(){
+  const items=allItems(),cur=currentSectionId();
+  const rows=SECTIONS.map(sec=>{
+    const all=items.filter(i=>i.s===sec.id);if(!all.length)return '';
+    let done=0,od=0,cash=0;
+    const ticks=all.map(i=>{const d=isDone(i),di=dueInfo(i);if(d){done++;return '<i class="d"></i>';}
+      if(i.pay&&i.a)cash+=i.a;
+      if(di&&di.diff<=0){od++;return '<i class="o"></i>';}
+      if(di&&di.diff<=5)return '<i class="s"></i>';return '<i></i>';}).join('');
+    return `<button type="button" class="toc-row" data-sec="${esc(sec.id)}"${sec.id===cur?' aria-current="true"':''}>
+      <span class="toc-name">${esc(sec.name)}</span>
+      <span class="toc-meta"><span>${done} of ${all.length} done</span>${od?`<span class="od">${od} overdue or due today</span>`:''}${cash?`<span class="cash">${money(cash)} to pay</span>`:''}</span>
+      <span class="strip" aria-hidden="true">${ticks}</span></button>`;
+  }).join('');
+  document.getElementById('paneToc').innerHTML=`<div class="toc-key" aria-hidden="true"><span><i style="background:var(--green)"></i>Done</span><span><i style="background:var(--amber)"></i>Due soon</span><span><i style="background:var(--red)"></i>Overdue</span><span><i style="background:var(--line2)"></i>Open</span></div>`+rows;
+}
+const VERB={check:'checked',uncheck:'unchecked',add:'added',remove:'removed',reset:'reset the ledger',seed:'carried over progress'};
+function dayLabel(d){
+  const t=today(),x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),diff=Math.round((t-x)/864e5);
+  if(diff===0)return 'Today';if(diff===1)return 'Yesterday';
+  return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+}
+function renderChanges(){
+  document.querySelectorAll('#chgWho button').forEach(b=>b.classList.toggle('on',b.dataset.who===chgWho));
+  const s=seenAt(),seenT=s?new Date(s).getTime():0;
+  const byId={};ITEMS.concat(state.custom).forEach(i=>{byId[i.id]=i;});
+  const rows=collapsedLog().filter(r=>!chgWho||r.who===chgWho);
+  if(!rows.length){document.getElementById('chgList').innerHTML=`<p class="chg-empty">${chgWho?esc(chgWho)+' has not changed anything yet.':'Nothing has changed yet. Checks, notes and additions show up here as you make them.'}</p>`;return;}
+  let html='',day='';
+  rows.forEach(r=>{
+    const d=new Date(r.at),dl=dayLabel(d);
+    if(dl!==day){html+=(day?'</ul>':'')+`<h3 class="chg-day">${esc(dl)}</h3><ul class="chg-list">`;day=dl;}
+    const it=r.item_id?byId[r.item_id]:null;
+    let verb=VERB[r.action]||r.action;
+    if(r.action==='note')verb=r.detail?'added a note to':'cleared the note on';
+    const title=it?it.t:(r.action==='add'?(r.detail||'an item'):(r.action==='remove'?'an item':''));
+    const isNew=r.who!==me.name&&r.action!=='seed'&&d.getTime()>seenT;
+    const time=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const note=(r.action==='note'||r.action==='seed')&&r.detail?`<span class="nt">${esc(r.detail.slice(0,200))}</span>`:'';
+    const shortT=title.length>90?title.slice(0,88)+'...':title;
+    const inner=`<span class="av${r.who==='Kristine'?' k':''}" aria-hidden="true">${esc((r.who||'?').charAt(0))}</span><span><b>${esc(r.who)}</b> ${esc(verb)}${title?` <span class="it">${esc(shortT)}</span>`:''}</span><time datetime="${esc(r.at)}">${time}</time>${note}`;
+    const jump=it&&!state.removed[it.id];
+    html+=`<li>${jump?`<button type="button" class="chg${isNew?' new':''}" data-item="${esc(r.item_id)}">${inner}</button>`:`<div class="chg${isNew?' new':''}">${inner}</div>`}</li>`;
+  });
+  document.getElementById('chgList').innerHTML=html+'</ul>';
+}
+function resetFilters(){
+  filt={status:'all',owner:'',section:'',q:''};
+  document.querySelectorAll('#segStatus button').forEach(x=>x.classList.toggle('on',x.dataset.v==='all'));
+  document.getElementById('fOwner').value='';fs.value='';document.getElementById('q').value='';
+  render();
+}
+function scrollToEl(el){const far=Math.abs(el.getBoundingClientRect().top)>window.innerHeight*2.5;el.scrollIntoView({behavior:reduceMotion()||far?'auto':'smooth',block:'start'});}
+function jumpToSection(id){
+  let g=document.getElementById('sec-'+id);
+  if(!g){resetFilters();g=document.getElementById('sec-'+id);}
+  if(!g)return;
+  if(!document.body.classList.contains('docked'))closeDrawer(true);
+  scrollToEl(g);markCurrent(id);
+}
+function jumpToItem(id){
+  const find=()=>[...document.querySelectorAll('#list .item')].find(e=>e.dataset.id===id);
+  let el=find();
+  if(!el){resetFilters();el=find();}
+  if(!el)return;
+  if(!document.body.classList.contains('docked'))closeDrawer(true);
+  scrollToEl(el);
+  el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'),2000);
+}
+fab.addEventListener('click',()=>openDrawer(unseenRows().length?'chg':drawerTab));
+document.getElementById('btnChanges').addEventListener('click',()=>openDrawer('chg'));
+document.getElementById('drawerX').addEventListener('click',()=>closeDrawer());
+scrimEl.addEventListener('click',()=>closeDrawer());
+document.querySelectorAll('.drawer-head [role=tab]').forEach(b=>b.addEventListener('click',()=>{drawerTab=b.dataset.tab;renderDrawer();}));
+document.getElementById('chgWho').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;chgWho=b.dataset.who;renderChanges();});
+document.getElementById('paneToc').addEventListener('click',e=>{const b=e.target.closest('.toc-row');if(b)jumpToSection(b.dataset.sec);});
+document.getElementById('chgList').addEventListener('click',e=>{const b=e.target.closest('button.chg');if(b)jumpToItem(b.dataset.item);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())closeDrawer();});
+window.addEventListener('resize',()=>{if(isOpen())document.body.classList.toggle('docked',isWide());});
+let scrollT=null;window.addEventListener('scroll',()=>{if(!isOpen()||drawerTab!=='toc')return;clearTimeout(scrollT);scrollT=setTimeout(()=>markCurrent(currentSectionId()),120);},{passive:true});
 </script>
 
 </body>
