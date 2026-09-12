@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wedding Ledger</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Source+Sans+3:wght@400;600&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+<style>
+  :root{
+    --ink:#2b2622; --ink2:#5d554e; --ink3:#8c837a;
+    --paper:#faf7f2; --card:#ffffff; --line:#e6dfd5; --line2:#d3c9bb;
+    --sand:#b98a5a; --sand2:#f1e6d6; --sand3:#8a6540;
+    --green:#3c7a4f; --green2:#e4f1e7;
+    --red:#b23b3b; --red2:#f9e4e4;
+    --amber:#a8731a; --amber2:#fbefd8;
+    --blue:#3f5f8f; --blue2:#e6edf7;
+    --grey2:#efece7;
+    --dec:#ece7f5; --dec2:#5a4a8a; --noteBg:#fffdf9; --doneBg:#fcfbf8;
+    --radius:12px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#efe9e0; --ink2:#c2b8ab; --ink3:#8f867c;
+      --paper:#1c1917; --card:#26221f; --line:#3a342e; --line2:#4a423a;
+      --sand:#c9a06f; --sand2:#3a2f22; --sand3:#dcb98a;
+      --green:#8fcaa0; --green2:#22332a;
+      --red:#e08a8a; --red2:#3d2626;
+      --amber:#e0b060; --amber2:#3a3020;
+      --blue:#9fb8dd; --blue2:#25303f;
+      --grey2:#33302c; --dec:#33304a; --dec2:#c3b6e6; --noteBg:#2b2724; --doneBg:#211e1b;
+    }
+  }
+  :root[data-theme="dark"]{
+      --ink:#efe9e0; --ink2:#c2b8ab; --ink3:#8f867c;
+      --paper:#1c1917; --card:#26221f; --line:#3a342e; --line2:#4a423a;
+      --sand:#c9a06f; --sand2:#3a2f22; --sand3:#dcb98a;
+      --green:#8fcaa0; --green2:#22332a;
+      --red:#e08a8a; --red2:#3d2626;
+      --amber:#e0b060; --amber2:#3a3020;
+      --blue:#9fb8dd; --blue2:#25303f;
+      --grey2:#33302c; --dec:#33304a; --dec2:#c3b6e6; --noteBg:#2b2724; --doneBg:#211e1b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  .wrap{max-width:1040px;margin:0 auto;padding-inline:18px;padding-block:28px 80px}
+  header{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+  h1{text-wrap:balance;font-family:"Fraunces",Georgia,"Times New Roman",serif;font-weight:500;font-size:30px;margin:0 0 4px;letter-spacing:.2px}
+  .sub{color:var(--ink2);font-size:14px}
+  .count{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;text-align:center;min-width:130px}
+  .count b{display:block;font-family:"Fraunces",Georgia,serif;font-size:34px;line-height:1;color:var(--sand3)}
+  .count span{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .stat .l{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-family:"Fraunces",Georgia,serif;font-size:24px;margin-top:2px}
+  .stat .h{font-size:12px;color:var(--ink2);margin-top:2px}
+  .bar{height:10px;background:var(--grey2);border-radius:6px;overflow:hidden;margin:16px 0 6px}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sand),var(--green));width:0;transition:width .4s}
+  .barlabel{font-size:13px;color:var(--ink2);display:flex;justify-content:space-between;margin-bottom:18px}
+  .ready{background:var(--green2);border:1px solid var(--green);color:var(--green);padding:14px 18px;border-radius:var(--radius);font-family:"Fraunces",Georgia,serif;font-size:19px;text-align:center;margin-bottom:18px;display:none}
+
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px;position:sticky;top:0;background:var(--paper);padding:10px 0;z-index:5;border-bottom:1px solid var(--line)}
+  .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--card)}
+  .seg button{border:0;background:transparent;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink2)}
+  .seg button.on{background:var(--ink);color:#fff}
+  input[type=search],select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink)}
+  input[type=search]{flex:1;min-width:160px}
+  .btn{font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+  .btn:hover{border-color:var(--sand)}
+  .btn.danger{color:var(--red)}
+  .spacer{flex:1}
+
+  section.grp{margin-bottom:22px}
+  .grp h2{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:19px;margin:0 0 4px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .grp h2 small{font-family:inherit;font-size:12px;color:var(--ink3);font-weight:400}
+  .grp .desc{color:var(--ink2);font-size:13px;margin:0 0 10px}
+  .grp .money{font-size:12px;color:var(--sand3);background:var(--sand2);border-radius:20px;padding:2px 10px}
+
+  .item{display:grid;grid-template-columns:28px 1fr auto;gap:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;align-items:start}
+  .item.done{opacity:.62;background:var(--doneBg)}
+  .item.done .t{text-decoration:line-through;text-decoration-color:var(--ink3)}
+  .item.due-soon{border-left:4px solid var(--amber)}
+  .item.overdue{border-left:4px solid var(--red)}
+  .item.done.due-soon,.item.done.overdue{border-left-color:var(--line)}
+  .chk{width:22px;height:22px;margin:2px 0 0;accent-color:var(--green);cursor:pointer}
+  .t{font-weight:600;font-size:15px;line-height:1.35}
+  .m{font-size:13px;color:var(--ink2);margin-top:4px;white-space:pre-line}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .tag{font-size:11.5px;padding:2px 8px;border-radius:20px;background:var(--grey2);color:var(--ink2);white-space:nowrap}
+  .tag.owner{background:var(--blue2);color:var(--blue)}
+  .tag.due{background:var(--amber2);color:var(--amber)}
+  .tag.due.past{background:var(--red2);color:var(--red)}
+  .tag.due.ok{background:var(--grey2);color:var(--ink2)}
+  .tag.flag{background:var(--red2);color:var(--red)}
+  .tag.dec{background:var(--dec);color:var(--dec2)}
+  .tag.src{background:transparent;border:1px dashed var(--line2);color:var(--ink3)}
+  .amt{font-family:"Fraunces",Georgia,serif;font-size:17px;text-align:right;white-space:nowrap}
+  .amt small{display:block;font-family:inherit;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+  .note{grid-column:2/4;margin-top:6px}
+  .note textarea{width:100%;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--noteBg);resize:vertical;min-height:34px;color:var(--ink)}
+  .note textarea::placeholder{color:var(--ink3)}
+  .item .del{grid-column:3;justify-self:end;font-size:12px;color:var(--ink3);background:none;border:0;cursor:pointer;padding:0}
+  .empty{color:var(--ink3);font-style:italic;padding:8px 2px}
+  .gate{position:fixed;inset:0;background:var(--paper);z-index:50;display:flex;align-items:center;justify-content:center;padding:18px}
+  .gate form{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;max-width:380px;width:100%;display:grid;gap:12px}
+  .gate h2{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:22px;margin:0}
+  .gate p{margin:0;font-size:13px;color:var(--ink2)}
+  .gate label{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;display:grid;gap:4px}
+  .gate input,.gate select{font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--noteBg);color:var(--ink)}
+  .gate .err{color:var(--red);font-size:13px;min-height:18px}
+  .gate button{font:inherit;font-size:15px;padding:10px;border:0;border-radius:8px;background:var(--ink);color:var(--paper);cursor:pointer}
+  .who{font-size:13px;color:var(--ink2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .who b{color:var(--ink)}
+  .who button{font:inherit;font-size:12px;background:none;border:0;color:var(--sand3);cursor:pointer;text-decoration:underline;padding:0}
+  .tag.by{background:var(--sand2);color:var(--sand3)}
+  details.log{margin:6px 0 18px;font-size:13px;color:var(--ink2)}
+  details.log summary{cursor:pointer;color:var(--ink3);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+  details.log ul{margin:8px 0 0;padding-left:18px;display:grid;gap:3px}
+  .sync{font-size:13px;padding:9px 14px;border-radius:8px;margin-bottom:14px;border:1px solid var(--line);background:var(--card);color:var(--ink2);display:flex;gap:10px;align-items:center}
+  .sync i{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:none}
+  .sync.shared i{background:var(--green)}
+  .sync.local i{background:var(--amber)}
+  .sync.saving i{background:var(--sand)}
+  .chk:focus-visible,.btn:focus-visible,button:focus-visible{outline:2px solid var(--sand);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+
+  .addbox{background:var(--card);border:1px dashed var(--line2);border-radius:var(--radius);padding:14px;margin-top:8px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:8px}
+  .addbox input,.addbox select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);min-width:0}
+  footer{margin-top:30px;font-size:12px;color:var(--ink3);line-height:1.6}
+  .legend{font-size:12px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:12px;margin:0 0 14px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  @media (max-width:640px){
+    .item{grid-template-columns:28px 1fr}
+    .amt{grid-column:2;text-align:left;margin-top:4px}
+    .amt small{display:inline;margin-left:6px}
+    .note{grid-column:1/3}
+    .item .del{grid-column:2}
+    .addbox{grid-template-columns:1fr 1fr}
+    .addbox input:first-child{grid-column:1/3}
+  }
+  @media print{
+    .controls,.addbox,.btn,footer .actions{display:none}
+    .item{break-inside:avoid;border:1px solid #ccc}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <form id="gateForm">
+    <h2>Wedding Ledger</h2>
+    <p>Pick your name and enter the shared passphrase. This device remembers both.</p>
+    <label>I am <select id="gName"><option>Julian</option><option>Kristine</option></select></label>
+    <label>Passphrase <input id="gPass" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="gErr"></div>
+    <button type="submit">Open the ledger</button>
+  </form>
+</div>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="hTitle">Wedding Ledger</h1>
+      <div class="sub" id="hSub"></div>
+    </div>
+    <div class="count"><b id="days">0</b><span id="daysLabel">days to go</span></div>
+  </header>
+
+  <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><span class="who" id="who"></span></div>
+  <details class="log" id="logbox"><summary>Recent activity</summary><ul id="log"></ul></details>
+  <div class="ready" id="ready">Everything is checked. You are 100% ready.</div>
+
+  <div class="stats">
+    <div class="stat"><div class="l">Items open</div><div class="v" id="sOpen">0</div><div class="h" id="sOpenH"></div></div>
+    <div class="stat"><div class="l">Household cash still to pay</div><div class="v" id="sCash">$0</div><div class="h">open items with a dollar amount, venue wire excluded</div></div>
+    <div class="stat"><div class="l">Venue wire</div><div class="v" id="sWire">$0</div><div class="h" id="sWireH"></div></div>
+    <div class="stat"><div class="l">Already paid or settled</div><div class="v" id="sPaid">$0</div><div class="h">checked items with a dollar amount</div></div>
+  </div>
+  <div class="bar"><i id="barFill"></i></div>
+  <div class="barlabel"><span id="barText"></span><span id="barPct"></span></div>
+
+  <div class="legend">
+    <span><i style="background:var(--red)"></i>Overdue or due today</span>
+    <span><i style="background:var(--amber)"></i>Due within 5 days</span>
+    <span><i style="background:var(--dec);border:1px solid var(--line2)"></i>Decision, no money attached</span>
+    <span><i style="background:var(--red2);border:1px solid #f0c4c4"></i>Flag: not in the workbook or unpriced</span>
+  </div>
+
+  <div class="controls">
+    <div class="seg" id="segStatus">
+      <button data-v="all" class="on">All</button>
+      <button data-v="open">Open</button>
+      <button data-v="done">Done</button>
+    </div>
+    <select id="fOwner">
+      <option value="">Anyone</option>
+      <option>Julian</option>
+      <option>Kristine</option>
+      <option>Both</option>
+      <option>Venue</option>
+    </select>
+    <select id="fSection"><option value="">All sections</option></select>
+    <input type="search" id="q" placeholder="Search items, notes, vendors">
+    <span class="spacer"></span>
+    <button class="btn" onclick="window.print()">Print</button>
+    <button class="btn danger" id="btnReset">Reset to workbook state</button>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="addbox">
+    <input id="aTitle" placeholder="Add something the ledger missed">
+    <input id="aAmt" placeholder="Amount (optional)" inputmode="decimal">
+    <select id="aOwner"><option>Both</option><option>Julian</option><option>Kristine</option><option>Venue</option></select>
+    <select id="aSection"></select>
+    <button class="btn" id="btnAdd">Add</button>
+  </div>
+
+  <footer>
+    <div><span id="fSources"></span> Items pre checked are the ones the workbook records as paid, sent, confirmed or decided. The item list itself lives behind the passphrase, not in this page. Checkmarks and notes are shared live between the two of you. Every change is stamped with who made it.</div>
+    <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Minutes" means it came from the venue meeting minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
+  </footer>
+</div>
+
+<script>
+let WEDDING = null, META = {};
+let SECTIONS = [];
+
+// fields: id, s (section), t (title), m (detail), a (amount, only when household cash is involved), pay (true when the amount is still owed if unchecked), owner, due (YYYY-MM-DD), done, src, flag, dec
+let ITEMS = [];
+
+const SB_URL='https://wrrsgmsvzfjgawetuyvd.supabase.co';
+const SB_KEY='sb_publishable_7SHqeVM7J9KBO98obNcu7g_ZedK6cKq';
+const KEY='wedding-ledger-live';
+const fs=document.getElementById('fSection'),as=document.getElementById('aSection');
+const BLANK=()=>({checked:{},notes:{},custom:[],removed:{},meta:{},log:[]});
+let state=BLANK();
+let sb=null, chan=null, me={name:'',pass:''}, mode='loading', noteTimers={}, pollTimer=null;
+const syncEl=document.getElementById('sync'), syncText=document.getElementById('syncText');
+function setSync(m,text){mode=m;syncEl.className='sync '+m;syncText.textContent=text;}
+function readCreds(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function writeCreds(){try{localStorage.setItem(KEY,JSON.stringify(me));}catch(e){}}
+function clearCreds(){try{localStorage.removeItem(KEY);}catch(e){}}
+function applyMeta(){
+  if(META.title){document.title=META.title;document.getElementById('hTitle').textContent=META.title;}
+  document.getElementById('hSub').textContent=META.sub||'';
+  document.getElementById('fSources').textContent=META.sources||'';
+  document.getElementById('sWire').textContent=META.wire?money(+META.wire):'$0';
+  if(META.date){const p=META.date.split('-');WEDDING=new Date(+p[0],+p[1]-1,+p[2]);}
+}
+function applyRead(d){
+  if(d.sections&&d.items){SECTIONS=d.sections;ITEMS=d.items;}
+  if(d.meta){META=d.meta;applyMeta();}
+  if(fs.options.length<=1){SECTIONS.forEach(s=>{fs.add(new Option(s.name,s.id));as.add(new Option(s.name,s.id));});}
+  const st=BLANK();
+  (d.state||[]).forEach(r=>{if(r.done!==null&&r.done!==undefined)st.checked[r.item_id]=!!r.done;if(r.note)st.notes[r.item_id]=r.note;st.meta[r.item_id]={by:r.by,at:r.at};});
+  (d.custom||[]).forEach(c=>{if(c.removed){st.removed[c.id]=true;return;}const it={id:c.id,s:c.s,t:c.t,owner:c.owner,src:'Added by '+c.by,custom:true};if(c.a){it.a=+c.a;it.pay=true;}st.custom.push(it);});
+  st.log=d.log||[];
+  state=st;
+}
+async function rpc(fn,args){
+  const {data,error}=await sb.rpc(fn,Object.assign({p_pass:me.pass},args||{}));
+  if(error){const m=(error.message||'');if(m.includes('bad_pass'))throw new Error('bad_pass');throw new Error(m||'rpc_failed');}
+  return data;
+}
+async function refresh(quiet){
+  try{const d=await rpc('ledger_read');applyRead(d);render();if(!quiet)setSync('shared','Live. Changes save for both of you as you make them.');}
+  catch(e){if(e.message==='bad_pass'){lock('The passphrase no longer works. Enter it again.');}else{setSync('local','Could not reach the ledger. Retrying.');}}
+}
+function announce(){try{chan&&chan.send({type:'broadcast',event:'changed',payload:{by:me.name}});}catch(e){}}
+async function write(fn,args,label){
+  setSync('saving','Saving');
+  try{await rpc(fn,args);announce();await refresh(true);setSync('shared',label||'Saved.');}
+  catch(e){if(e.message==='bad_pass'){lock('The passphrase no longer works. Enter it again.');}else{setSync('local','That change did not save. Check your connection and try again.');await refresh(true);}}
+}
+function setDone(id,done){state.checked[id]=done;render();write('ledger_set',{p_name:me.name,p_item:id,p_done:done,p_note:null},done?'Checked. Saved for both of you.':'Unchecked. Saved for both of you.');}
+function setNote(id,text){state.notes[id]=text;clearTimeout(noteTimers[id]);noteTimers[id]=setTimeout(()=>write('ledger_set',{p_name:me.name,p_item:id,p_done:null,p_note:text},'Note saved for both of you.'),900);}
+function lock(msg){
+  clearInterval(pollTimer);if(chan){try{sb.removeChannel(chan);}catch(e){}chan=null;}
+  clearCreds();document.getElementById('gate').hidden=false;document.getElementById('gErr').textContent=msg||'';
+}
+async function unlock(name,pass){
+  me={name,pass};
+  if(!sb)sb=window.supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:5}}});
+  try{const d=await rpc('ledger_read');applyRead(d);}
+  catch(e){me={name:'',pass:''};document.getElementById('gErr').textContent=e.message==='bad_pass'?'That passphrase is not right.':'Could not reach the ledger. Try again in a moment.';return false;}
+  writeCreds();document.getElementById('gate').hidden=true;render();
+  setSync('shared','Live. Changes save for both of you as you make them.');
+  document.getElementById('who').innerHTML=`Signed in as <b>${me.name}</b> <button id="btnOut" type="button">not you?</button>`;
+  document.getElementById('btnOut').addEventListener('click',()=>lock(''));
+  chan=sb.channel('ledger').on('broadcast',{event:'changed'},p=>{refresh(true);}).subscribe();
+  clearInterval(pollTimer);pollTimer=setInterval(()=>refresh(true),30000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh(true);});
+  return true;
+}
+document.getElementById('gateForm').addEventListener('submit',async e=>{
+  e.preventDefault();document.getElementById('gErr').textContent='';
+  const b=e.target.querySelector('button');b.disabled=true;
+  try{await unlock(document.getElementById('gName').value,document.getElementById('gPass').value.trim());}
+  catch(err){document.getElementById('gErr').textContent='Something went wrong opening the ledger. Reload and try again.';}
+  finally{b.disabled=false;}
+});
+(function boot(){
+  const c=readCreds();
+  if(c&&c.pass&&c.name){document.getElementById('gName').value=c.name;unlock(c.name,c.pass);}
+})();
+function allItems(){return ITEMS.concat(state.custom).filter(i=>!state.removed[i.id]);}
+function isDone(i){return state.checked.hasOwnProperty(i.id)?!!state.checked[i.id]:!!i.done;}
+const money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());};
+function dueInfo(i){
+  if(!i.due)return null;
+  const p=i.due.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);
+  const diff=Math.round((d-today())/864e5);
+  const label=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return {diff,label};
+}
+
+let filt={status:'all',owner:'',section:'',q:''};
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtAt(a){try{return new Date(a).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}catch(e){return '';}}
+
+function render(){
+  const list=document.getElementById('list');list.innerHTML='';
+  const items=allItems();
+  const q=filt.q.toLowerCase();
+  let shown=0;
+  SECTIONS.forEach(sec=>{
+    if(filt.section&&filt.section!==sec.id)return;
+    const rows=items.filter(i=>i.s===sec.id).filter(i=>{
+      const d=isDone(i);
+      if(filt.status==='open'&&d)return false;
+      if(filt.status==='done'&&!d)return false;
+      if(filt.owner&&i.owner!==filt.owner)return false;
+      if(q&&!((i.t+' '+(i.m||'')+' '+(state.notes[i.id]||'')+' '+(i.owner||'')).toLowerCase().includes(q)))return false;
+      return true;
+    });
+    if(!rows.length)return;
+    const all=items.filter(i=>i.s===sec.id),done=all.filter(isDone).length;
+    const openCash=all.filter(i=>!isDone(i)&&i.pay&&i.a).reduce((s,i)=>s+i.a,0);
+    const g=document.createElement('section');g.className='grp';
+    g.innerHTML=`<h2>${sec.name} <small>${done} of ${all.length} done</small>${openCash?`<span class="money">${money(openCash)} still to pay</span>`:''}</h2><p class="desc">${sec.desc}</p>`;
+    rows.forEach(i=>{
+      shown++;
+      const d=isDone(i),di=dueInfo(i);
+      const el=document.createElement('div');
+      el.className='item'+(d?' done':'')+(!d&&di&&di.diff<=0?' overdue':(!d&&di&&di.diff<=5?' due-soon':''));
+      let tags=`<span class="tag owner">${i.owner||'Both'}</span>`;
+      if(di)tags+=`<span class="tag due ${d?'ok':(di.diff<0?'past':(di.diff===0?'past':''))}">${d?'was due ':'due '}${di.label}${!d&&di.diff<0?' ('+(-di.diff)+'d overdue)':(!d&&di.diff===0?' (today)':'')}</span>`;
+      if(i.dec)tags+=`<span class="tag dec">decision</span>`;
+      if(i.flag)tags+=`<span class="tag flag">${i.src==='Not in workbook'?'not in workbook':'unpriced'}</span>`;
+      if(i.src)tags+=`<span class="tag src">${i.src}</span>`;
+      const mt=state.meta[i.id];if(mt&&mt.by)tags+=`<span class="tag by">${mt.by}, ${fmtAt(mt.at)}</span>`;
+      const amt=i.a?`<div class="amt">${money(i.a)}<small>${d?(i.pay?'paid':'amount'):(i.pay?'still owed':'amount')}</small></div>`:'<div></div>';
+      el.innerHTML=`<input type="checkbox" class="chk" ${d?'checked':''} aria-label="Mark done">
+        <div><div class="t">${esc(i.t)}</div>${i.m?`<div class="m">${esc(i.m)}</div>`:''}<div class="tags">${tags}</div></div>
+        ${amt}
+        <div class="note"><textarea rows="1" placeholder="Your note (saved automatically)">${esc(state.notes[i.id]||'')}</textarea></div>
+        ${i.custom?'<button class="del">remove</button>':''}`;
+      el.querySelector('.chk').addEventListener('change',e=>{setDone(i.id,e.target.checked);});
+      el.querySelector('textarea').addEventListener('input',e=>{setNote(i.id,e.target.value);});
+      const del=el.querySelector('.del');if(del)del.addEventListener('click',()=>{write('ledger_remove',{p_name:me.name,p_id:i.id},'Removed.');});
+      g.appendChild(el);
+    });
+    list.appendChild(g);
+  });
+  if(!shown)list.innerHTML='<div class="empty">Nothing matches this view.</div>';
+  stats();
+}
+
+function stats(){
+  const items=allItems();
+  const open=items.filter(i=>!isDone(i)),done=items.length-open.length;
+  const cash=open.filter(i=>i.pay&&i.a).reduce((s,i)=>s+i.a,0);
+  const paid=items.filter(i=>isDone(i)&&i.a).reduce((s,i)=>s+i.a,0);
+  const overdue=open.filter(i=>{const d=dueInfo(i);return d&&d.diff<0;}).length;
+  const soon=open.filter(i=>{const d=dueInfo(i);return d&&d.diff>=0&&d.diff<=5;}).length;
+  document.getElementById('sOpen').textContent=open.length;
+  document.getElementById('sOpenH').textContent=(overdue?overdue+' overdue, ':'')+soon+' due in the next 5 days';
+  document.getElementById('sCash').textContent=money(cash);
+  document.getElementById('sPaid').textContent=money(paid);
+  const wireDone=isDone(ITEMS.find(i=>i.id==='w-wire'));
+  document.getElementById('sWireH').textContent=(wireDone?META.wireSent:META.wireDue)||'';
+  const pct=items.length?Math.round(done/items.length*100):0;
+  document.getElementById('barFill').style.width=pct+'%';
+  document.getElementById('barText').textContent=`${done} of ${items.length} items complete`;
+  document.getElementById('barPct').textContent=pct+'%';
+  document.getElementById('ready').style.display=open.length?'none':'block';
+  const lg=document.getElementById('log');lg.innerHTML=(state.log||[]).slice(0,25).map(r=>{const it=ITEMS.concat(state.custom).find(x=>x.id===r.item_id);const nm=it?it.t:(r.item_id||'');const v={check:'checked',uncheck:'unchecked',note:'noted on',add:'added',remove:'removed',reset:'reset the ledger',seed:'seeded'}[r.action]||r.action;return `<li><b>${esc(r.who)}</b> ${v} ${nm?esc(nm.slice(0,70)):''}${r.action==='note'&&r.detail?': "'+esc(r.detail.slice(0,80))+'"':''} <span style="color:var(--ink3)">${fmtAt(r.at)}</span></li>`;}).join('')||'<li>No activity yet.</li>';
+  const de=document.getElementById('days'),dl=document.getElementById('daysLabel');
+  if(!WEDDING){de.textContent='';dl.textContent='';return;}
+  const dd=Math.round((WEDDING-today())/864e5);
+  if(dd>1){de.textContent=dd;dl.textContent='days to go';}
+  else if(dd===1){de.textContent='1';dl.textContent='day to go';}
+  else if(dd===0){de.textContent='0';dl.textContent='it is today';}
+  else{de.textContent='✓';dl.textContent='married';}
+}
+
+// controls
+document.querySelectorAll('#segStatus button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#segStatus button').forEach(x=>x.classList.remove('on'));b.classList.add('on');filt.status=b.dataset.v;render();}));
+document.getElementById('fOwner').addEventListener('change',e=>{filt.owner=e.target.value;render();});
+fs.addEventListener('change',e=>{filt.section=e.target.value;render();});
+document.getElementById('q').addEventListener('input',e=>{filt.q=e.target.value;render();});
+document.getElementById('btnAdd').addEventListener('click',()=>{
+  const t=document.getElementById('aTitle').value.trim();if(!t)return;
+  const a=parseFloat(document.getElementById('aAmt').value.replace(/[^0-9.]/g,''));
+  document.getElementById('aTitle').value='';document.getElementById('aAmt').value='';
+  write('ledger_add',{p_name:me.name,p_id:'custom-'+Date.now(),p_section:as.value,p_title:t,p_amount:a>0?a:null,p_owner:document.getElementById('aOwner').value},'Added for both of you.');
+});
+document.getElementById('btnReset').addEventListener('click',()=>{
+  if(!confirm('Reset every checkmark and note, for both of you, to the state recorded in the workbook on Sept 12?'))return;
+  write('ledger_reset',{p_name:me.name},'Reset for both of you.');
+});
+</script>
+
+</body>
+</html>
