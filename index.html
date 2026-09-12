@@ -318,6 +318,16 @@ function applyMeta(){
   document.getElementById('sWire').textContent=META.wire?money(+META.wire):'$0';
   if(META.date){const p=META.date.split('-');WEDDING=new Date(+p[0],+p[1]-1,+p[2]);}
 }
+function wireOwed(secId){
+  const w=ITEMS.find(i=>i.id==='w-wire');
+  return w&&w.s===secId&&!isDone(w)&&META.wire?+META.wire:0;
+}
+function cashText(secId,cash,suffix){
+  const w=wireOwed(secId);
+  if(w&&cash)return `${money(w)} wire plus ${money(cash)} ${suffix}`;
+  if(w)return `${money(w)} wire ${suffix}`;
+  return cash?`${money(cash)} ${suffix}`:'';
+}
 function applyRead(d){
   if(d.sections&&d.items){SECTIONS=d.sections;ITEMS=d.items;}
   if(d.meta){META=d.meta;applyMeta();}
@@ -410,7 +420,7 @@ function render(){
     const all=items.filter(i=>i.s===sec.id),done=all.filter(isDone).length;
     const openCash=all.filter(i=>!isDone(i)&&i.pay&&i.a).reduce((s,i)=>s+i.a,0);
     const g=document.createElement('section');g.className='grp';g.id='sec-'+sec.id;
-    g.innerHTML=`<h2>${sec.name} <small>${done} of ${all.length} done</small>${openCash?`<span class="money">${money(openCash)} still to pay</span>`:''}</h2><p class="desc">${sec.desc}</p>`;
+    g.innerHTML=`<h2>${sec.name} <small>${done} of ${all.length} done</small>${cashText(sec.id,openCash,'still to pay')?`<span class="money">${cashText(sec.id,openCash,'still to pay')}</span>`:''}</h2><p class="desc">${sec.desc}</p>`;
     rows.forEach(i=>{
       shown++;
       const d=isDone(i),di=dueInfo(i);
@@ -546,7 +556,7 @@ function renderToc(){
       if(di&&di.diff<=5)return '<i class="s"></i>';return '<i></i>';}).join('');
     return `<button type="button" class="toc-row" data-sec="${esc(sec.id)}"${sec.id===cur?' aria-current="true"':''}>
       <span class="toc-name">${esc(sec.name)}</span>
-      <span class="toc-meta"><span>${done} of ${all.length} done</span>${od?`<span class="od">${od} overdue or due today</span>`:''}${cash?`<span class="cash">${money(cash)} to pay</span>`:''}</span>
+      <span class="toc-meta"><span>${done} of ${all.length} done</span>${od?`<span class="od">${od} overdue or due today</span>`:''}${cashText(sec.id,cash,'to pay')?`<span class="cash">${cashText(sec.id,cash,'to pay')}</span>`:''}</span>
       <span class="strip" aria-hidden="true">${ticks}</span></button>`;
   }).join('');
   document.getElementById('paneToc').innerHTML=`<div class="toc-key" aria-hidden="true"><span><i style="background:var(--green)"></i>Done</span><span><i style="background:var(--amber)"></i>Due soon</span><span><i style="background:var(--red)"></i>Overdue</span><span><i style="background:var(--line2)"></i>Open</span></div>`+rows;
