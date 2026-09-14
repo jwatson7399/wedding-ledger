@@ -162,12 +162,12 @@
   .tag.doclink:hover{background:var(--sand2)}
 
   /* minutes */
-  .doc-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .doc-pick{display:inline-flex;flex-wrap:wrap;margin-bottom:14px;max-width:100%}
   .doc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 32px 32px;max-width:780px}
   .doc-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
   .doc-title{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:26px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
   .doc-sub{color:var(--ink2);font-size:14px;margin:0}
-  .doc-link{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--sand2);border-radius:8px;padding:10px 14px;margin:18px 0 0;font-size:13.5px;color:var(--ink2)}
+  .doc-link{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:flex-start;background:var(--sand2);border-radius:8px;padding:10px 14px;margin:18px 0 0;font-size:13.5px;color:var(--ink2)}
   .doc-meta{display:grid;grid-template-columns:max-content 1fr;gap:7px 20px;margin:18px 0 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13.5px}
   .doc-meta dt{color:var(--ink3)}
   .doc-meta dd{margin:0;color:var(--ink)}
@@ -182,10 +182,16 @@
   .doc-sec ul{margin:0;padding-left:20px;max-width:70ch}
   .doc-sec li{margin:0 0 6px;line-height:1.6;font-size:14.5px}
   .doc-table{overflow-x:auto;margin-top:4px}
-  .doc-table table{border-collapse:collapse;width:100%;min-width:520px;font-size:13.5px}
+  .doc-table table{border-collapse:collapse;width:100%;font-size:13.5px}
+  .doc-table table.wide{min-width:520px}
   .doc-table th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line2);padding:8px 10px}
   .doc-table td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top;line-height:1.45}
-  .doc-table td:last-child{white-space:nowrap;color:var(--ink2)}
+  .doc-table td.nw{white-space:nowrap;color:var(--ink2)}
+  .doc-table table.wide td:first-child{width:1%;white-space:nowrap}
+  .doc-table table:not(.wide) td:first-child{width:32%;color:var(--ink2)}
+  .doc-secs{display:flex;flex-wrap:wrap;gap:4px 16px;width:100%}
+  .doc-note{font-size:13px;color:var(--ink2);font-style:italic;margin:12px 0 0;max-width:70ch;line-height:1.55}
+  .doc-sec p.para{margin:0 0 10px;line-height:1.6;font-size:14.5px;max-width:70ch}
   .doc-foot{margin-top:26px;font-size:12px;color:var(--ink3)}
   .doc-empty{color:var(--ink3);font-style:italic;padding:8px 2px}
   @media (max-width:640px){
@@ -319,7 +325,7 @@
 
   <footer>
     <div><span id="fSources"></span> Items pre checked are the ones the workbook records as paid, sent, confirmed or decided. The item list itself lives behind the passphrase, not in this page. Checkmarks and notes are shared live between the two of you. Every change is stamped with who made it.</div>
-    <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Minutes" means it came from the venue meeting minutes; "Photo minutes" means it came from the final photographer meeting, and tapping that tag opens those minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
+    <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Venue minutes" and "Photo minutes" mean it came from the final details meeting with the venue or the final photographer meeting, and tapping the tag opens those minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
   </footer>
 </div>
 
@@ -703,21 +709,28 @@ function renderDocs(){
   const box=document.getElementById('docs');
   if(!DOCS.length){box.innerHTML='<p class="doc-empty">No minutes saved yet.</p>';return;}
   const d=DOCS.find(x=>x.id===docId)||DOCS[0];docId=d.id;
-  const pick=DOCS.length>1?`<div class="seg doc-pick">${DOCS.map(x=>`<button type="button" data-doc="${esc(x.id)}" class="${x.id===d.id?'on':''}">${esc(x.title)}</button>`).join('')}</div>`:'';
+  const pick=DOCS.length>1?`<div class="seg doc-pick">${DOCS.map(x=>`<button type="button" data-doc="${esc(x.id)}" class="${x.id===d.id?'on':''}">${esc(x.short||x.title)}</button>`).join('')}</div>`:'';
   const linked=allItems().filter(i=>i.doc===d.id),open=linked.filter(i=>!isDone(i)).length;
-  const secId=linked.length?linked[0].s:'',sec=SECTIONS.find(s=>s.id===secId);
-  const link=linked.length&&sec?`<div class="doc-link"><span>${linked.length} action items from these minutes are in the checklist under ${esc(sec.name)}. ${open?open+' still open.':'All done.'}</span><button type="button" class="linkish" data-goto="${esc(secId)}">Go to ${esc(sec.name)}</button></div>`:'';
+  const bySec=SECTIONS.map(s=>({s,items:linked.filter(i=>i.s===s.id)})).filter(g=>g.items.length);
+  const link=linked.length?`<div class="doc-link"><span>${linked.length} checklist ${linked.length===1?'item comes':'items come'} from these minutes. ${open?open+' still open.':'All done.'}</span><span class="doc-secs">${bySec.map(g=>{const o=g.items.filter(i=>!isDone(i)).length;return `<button type="button" class="linkish" data-goto="${esc(g.s.id)}">${esc(g.s.name)} (${o?o+' open':'done'})</button>`;}).join('')}</span></div>`:'';
   const meta=(d.meta||[]).length?`<dl class="doc-meta">${d.meta.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:'';
   const secs=d.sections||[];
   const toc=secs.length>3?`<ol class="doc-toc">${secs.map((s,n)=>`<li><button type="button" data-anchor="${n+1}">${esc(s.h)}</button></li>`).join('')}</ol>`:'';
   const body=secs.map((s,n)=>{
     let inner='';
-    (s.groups||[]).forEach(g=>{inner+=(g.sub?`<h4>${esc(g.sub)}</h4>`:'')+`<ul>${(g.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;});
-    if(s.table){const t=s.table;inner+=`<div class="doc-table"><table><thead><tr>${t.cols.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(r=>`<tr>${r.map((c,k)=>`<td>${k===0?`<span class="tag owner">${esc(c)}</span>`:esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+    const table=t=>{const own=t.cols[0]==='Owner',wide=t.cols.length>2;return `<div class="doc-table"><table${wide?' class="wide"':''}><thead><tr>${t.cols.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(r=>`<tr>${r.map((c,k)=>`<td${wide&&k===r.length-1?' class="nw"':''}>${k===0&&own?`<span class="tag owner">${esc(c)}</span>`:esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;};
+    (s.groups||[]).forEach(g=>{
+      if(g.sub)inner+=`<h4>${esc(g.sub)}</h4>`;
+      (g.paras||[]).forEach(t=>{inner+=`<p class="para">${esc(t)}</p>`;});
+      if((g.bullets||[]).length)inner+=`<ul>${g.bullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;
+      if(g.table)inner+=table(g.table);
+      if(g.note)inner+=`<p class="doc-note">${esc(g.note)}</p>`;
+    });
+    if(s.table)inner+=table(s.table);
     return `<section class="doc-sec" id="doc-${esc(d.id)}-${n+1}"><h3><span class="n">${n+1}.</span><span>${esc(s.h)}</span></h3>${inner}</section>`;
   }).join('');
-  const foot=[d.file?`Source file: ${esc(d.file)}`:'',d.added?`Added to the ledger ${esc(new Date(d.added+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}`:''].filter(Boolean).join('. ');
-  box.innerHTML=`${pick}<article class="doc"><div class="doc-head"><div><h2 class="doc-title">${esc(d.title)}</h2>${d.subtitle?`<p class="doc-sub">${esc(d.subtitle)}</p>`:''}</div><button type="button" class="btn" data-print="1">Print minutes</button></div>${link}${meta}${toc}${body}${foot?`<p class="doc-foot">${foot}.</p>`:''}</article>`;
+  const foot=[d.file?`Source file: ${esc(d.file)}`:'',d.privacy?esc(d.privacy.replace(/\.$/,'')):'',d.added?`Added to the ledger ${esc(new Date(d.added+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}`:''].filter(Boolean).join('. ');
+  box.innerHTML=`${pick}<article class="doc"><div class="doc-head"><div><h2 class="doc-title">${esc(d.title)}</h2>${d.subtitle?`<p class="doc-sub">${esc(d.subtitle)}</p>`:''}</div><button type="button" class="btn" data-print="1">Print minutes</button></div>${link}${meta}${d.note?`<p class="doc-note">${esc(d.note)}</p>`:''}${toc}${body}${d.closing?`<p class="doc-note">${esc(d.closing)}</p>`:''}${foot?`<p class="doc-foot">${foot}.</p>`:''}</article>`;
 }
 document.querySelector('.views').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)showView(b.dataset.view);});
 document.getElementById('docs').addEventListener('click',e=>{
