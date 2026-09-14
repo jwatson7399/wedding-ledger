@@ -47,6 +47,7 @@
   .seg button.on{background:var(--ink);color:#fff}
   input[type=search],select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink)}
   input[type=search]{flex:1;min-width:160px}
+  #fSection{max-width:250px}
   .btn{font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
   .btn:hover{border-color:var(--sand)}
   .btn.danger{color:var(--red)}
@@ -151,6 +152,49 @@
   .chg .nt{grid-column:2/4;font-size:12.5px;color:var(--ink2);border-left:2px solid var(--line2);padding:1px 0 1px 9px;margin-top:4px;font-style:italic}
   .chg-empty{color:var(--ink3);font-size:13px;padding:14px 12px}
 
+  /* top level views */
+  .views{display:flex;gap:24px;border-bottom:1px solid var(--line);margin:0 0 18px}
+  .views button{font:inherit;font-size:15px;font-weight:600;background:none;border:0;padding:8px 2px 10px;margin-bottom:-1px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
+  .views button:hover{color:var(--ink2)}
+  .views button.on{color:var(--ink);border-bottom-color:var(--sand)}
+  .vt-n{font-weight:400;color:var(--ink3);margin-left:6px;font-size:13px}
+  .tag.doclink{font:inherit;font-size:11.5px;cursor:pointer;border:1px solid var(--sand);background:transparent;color:var(--sand3)}
+  .tag.doclink:hover{background:var(--sand2)}
+
+  /* minutes */
+  .doc-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .doc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 32px 32px;max-width:780px}
+  .doc-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+  .doc-title{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:26px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
+  .doc-sub{color:var(--ink2);font-size:14px;margin:0}
+  .doc-link{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;background:var(--sand2);border-radius:8px;padding:10px 14px;margin:18px 0 0;font-size:13.5px;color:var(--ink2)}
+  .doc-meta{display:grid;grid-template-columns:max-content 1fr;gap:7px 20px;margin:18px 0 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:13.5px}
+  .doc-meta dt{color:var(--ink3)}
+  .doc-meta dd{margin:0;color:var(--ink)}
+  .doc-toc{margin:16px 0 0;padding:0 0 0 22px;columns:2 220px;column-gap:28px;font-size:13.5px;line-height:1.5}
+  .doc-toc li{break-inside:avoid;padding:2px 0}
+  .doc-toc button{font:inherit;background:none;border:0;padding:0;color:var(--sand3);cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:2px}
+  .doc-toc button:hover{text-decoration-color:var(--sand3)}
+  .doc-sec{scroll-margin-top:16px}
+  .doc-sec h3{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:19px;margin:28px 0 8px;display:flex;gap:10px;align-items:baseline}
+  .doc-sec h3 .n{color:var(--sand3);font-size:15px;min-width:1.4em}
+  .doc-sec h4{font-size:13.5px;font-weight:600;color:var(--ink2);margin:14px 0 4px}
+  .doc-sec ul{margin:0;padding-left:20px;max-width:70ch}
+  .doc-sec li{margin:0 0 6px;line-height:1.6;font-size:14.5px}
+  .doc-table{overflow-x:auto;margin-top:4px}
+  .doc-table table{border-collapse:collapse;width:100%;min-width:520px;font-size:13.5px}
+  .doc-table th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:1px solid var(--line2);padding:8px 10px}
+  .doc-table td{border-bottom:1px solid var(--line);padding:8px 10px;vertical-align:top;line-height:1.45}
+  .doc-table td:last-child{white-space:nowrap;color:var(--ink2)}
+  .doc-foot{margin-top:26px;font-size:12px;color:var(--ink3)}
+  .doc-empty{color:var(--ink3);font-style:italic;padding:8px 2px}
+  @media (max-width:640px){
+    .doc{padding:20px 16px 24px}
+    .doc-title{font-size:22px}
+    .doc-meta{grid-template-columns:1fr;gap:2px}
+    .doc-meta dd{margin-bottom:8px}
+  }
+
   section.grp{scroll-margin-top:70px}
   .item{scroll-margin-top:90px}
   .item.flash{animation:flash 1.8s ease-out}
@@ -186,7 +230,8 @@
     .addbox input:first-child{grid-column:1/3}
   }
   @media print{
-    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges{display:none!important}
+    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.views,.doc-link,.doc-toc{display:none!important}
+    .doc{border:0;padding:0;max-width:none}
     body.drawer-open.docked .wrap{margin-right:auto}
     .item{break-inside:avoid;border:1px solid #ccc}
     body{background:#fff}
@@ -214,6 +259,12 @@
   </header>
 
   <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><button type="button" class="linkish" id="btnChanges">Recent changes<span class="n" id="chgCount" hidden></span></button><span class="who" id="who"></span></div>
+  <nav class="views" role="tablist" aria-label="Ledger views">
+    <button type="button" role="tab" id="vtList" data-view="list" aria-selected="true" aria-controls="viewList" class="on">Checklist</button>
+    <button type="button" role="tab" id="vtDocs" data-view="docs" aria-selected="false" aria-controls="viewDocs">Minutes<span class="vt-n" id="docCount"></span></button>
+  </nav>
+
+  <div id="viewList" role="tabpanel" aria-labelledby="vtList">
   <div class="ready" id="ready">Everything is checked. You are 100% ready.</div>
 
   <div class="stats">
@@ -244,6 +295,7 @@
       <option>Kristine</option>
       <option>Both</option>
       <option>Venue</option>
+      <option>Photographer</option>
     </select>
     <select id="fSection"><option value="">All sections</option></select>
     <input type="search" id="q" placeholder="Search items, notes, vendors">
@@ -257,14 +309,17 @@
   <div class="addbox">
     <input id="aTitle" placeholder="Add something the ledger missed">
     <input id="aAmt" placeholder="Amount (optional)" inputmode="decimal">
-    <select id="aOwner"><option>Both</option><option>Julian</option><option>Kristine</option><option>Venue</option></select>
+    <select id="aOwner"><option>Both</option><option>Julian</option><option>Kristine</option><option>Venue</option><option>Photographer</option></select>
     <select id="aSection"></select>
     <button class="btn" id="btnAdd">Add</button>
   </div>
+  </div>
+
+  <div id="viewDocs" role="tabpanel" aria-labelledby="vtDocs" hidden><div id="docs"></div></div>
 
   <footer>
     <div><span id="fSources"></span> Items pre checked are the ones the workbook records as paid, sent, confirmed or decided. The item list itself lives behind the passphrase, not in this page. Checkmarks and notes are shared live between the two of you. Every change is stamped with who made it.</div>
-    <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Minutes" means it came from the venue meeting minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
+    <div class="actions" style="margin-top:6px">Data tag: "Workbook" means it is a line in the Sept workbook; "Minutes" means it came from the venue meeting minutes; "Photo minutes" means it came from the final photographer meeting, and tapping that tag opens those minutes; "Not in workbook" means nothing in the finance files tracks it, so confirm it yourself.</div>
   </footer>
 </div>
 
@@ -293,7 +348,7 @@
 </aside>
 
 <script>
-let WEDDING = null, META = {};
+let WEDDING = null, META = {}, DOCS = [], view = 'list', docId = '';
 let SECTIONS = [];
 
 // fields: id, s (section), t (title), m (detail), a (amount, only when household cash is involved), pay (true when the amount is still owed if unchecked), owner, due (YYYY-MM-DD), done, src, flag, dec
@@ -331,6 +386,7 @@ function cashText(secId,cash,suffix){
 function applyRead(d){
   if(d.sections&&d.items){SECTIONS=d.sections;ITEMS=d.items;}
   if(d.meta){META=d.meta;applyMeta();}
+  if(Array.isArray(d.docs)){DOCS=d.docs;document.getElementById('docCount').textContent=DOCS.length?String(DOCS.length):'';}
   if(fs.options.length<=1){SECTIONS.forEach(s=>{fs.add(new Option(s.name,s.id));as.add(new Option(s.name,s.id));});}
   const st=BLANK();
   (d.state||[]).forEach(r=>{if(r.done!==null&&r.done!==undefined)st.checked[r.item_id]=!!r.done;if(r.note)st.notes[r.item_id]=r.note;st.meta[r.item_id]={by:r.by,at:r.at};});
@@ -366,6 +422,7 @@ async function unlock(name,pass){
   try{const d=await rpc('ledger_read');applyRead(d);}
   catch(e){me={name:'',pass:''};document.getElementById('gErr').textContent=e.message==='bad_pass'?'That passphrase is not right.':'Could not reach the ledger. Try again in a moment.';return false;}
   writeCreds();document.getElementById('gate').hidden=true;document.getElementById('fab').hidden=false;render();
+  if(location.hash.indexOf('#minutes')===0)showView('docs',decodeURIComponent(location.hash.split('/')[1]||''));
   setSync('shared','Live. Changes save for both of you as you make them.');
   document.getElementById('who').innerHTML=`Signed in as <b>${me.name}</b> <button id="btnOut" type="button">not you?</button>`;
   document.getElementById('btnOut').addEventListener('click',()=>lock(''));
@@ -431,7 +488,7 @@ function render(){
       if(di)tags+=`<span class="tag due ${d?'ok':(di.diff<0?'past':(di.diff===0?'past':''))}">${d?'was due ':'due '}${di.label}${!d&&di.diff<0?' ('+(-di.diff)+'d overdue)':(!d&&di.diff===0?' (today)':'')}</span>`;
       if(i.dec)tags+=`<span class="tag dec">decision</span>`;
       if(i.flag)tags+=`<span class="tag flag">${i.src==='Not in workbook'?'not in workbook':'unpriced'}</span>`;
-      if(i.src)tags+=`<span class="tag src">${i.src}</span>`;
+      if(i.src)tags+=i.doc?`<button type="button" class="tag src doclink" data-doc="${esc(i.doc)}" title="Open these minutes">${esc(i.src)}</button>`:`<span class="tag src">${esc(i.src)}</span>`;
       const mt=state.meta[i.id];if(mt&&mt.by)tags+=`<span class="tag by">${mt.by}, ${fmtAt(mt.at)}</span>`;
       const amt=i.a?`<div class="amt">${money(i.a)}<small>${d?(i.pay?'paid':'amount'):(i.pay?'still owed':'amount')}</small></div>`:'<div></div>';
       el.innerHTML=`<input type="checkbox" class="chk" ${d?'checked':''} aria-label="Mark done">
@@ -470,6 +527,7 @@ function stats(){
   document.getElementById('ready').style.display=open.length?'none':'block';
   updateBadge();
   if(document.body.classList.contains('drawer-open'))renderDrawer();
+  if(view==='docs')renderDocs();
   const de=document.getElementById('days'),dl=document.getElementById('daysLabel');
   if(!WEDDING){de.textContent='';dl.textContent='';return;}
   const dd=Math.round((WEDDING-today())/864e5);
@@ -599,6 +657,7 @@ function resetFilters(){
 }
 function scrollToEl(el){const far=Math.abs(el.getBoundingClientRect().top)>window.innerHeight*2.5;el.scrollIntoView({behavior:reduceMotion()||far?'auto':'smooth',block:'start'});}
 function jumpToSection(id){
+  if(view!=='list')showView('list');
   let g=document.getElementById('sec-'+id);
   if(!g){resetFilters();g=document.getElementById('sec-'+id);}
   if(!g)return;
@@ -606,6 +665,7 @@ function jumpToSection(id){
   scrollToEl(g);markCurrent(id);
 }
 function jumpToItem(id){
+  if(view!=='list')showView('list');
   const find=()=>[...document.querySelectorAll('#list .item')].find(e=>e.dataset.id===id);
   let el=find();
   if(!el){resetFilters();el=find();}
@@ -626,6 +686,48 @@ document.getElementById('chgList').addEventListener('click',e=>{const b=e.target
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen())closeDrawer();});
 window.addEventListener('resize',()=>{if(isOpen())document.body.classList.toggle('docked',isWide());});
 let scrollT=null;window.addEventListener('scroll',()=>{if(!isOpen()||drawerTab!=='toc')return;clearTimeout(scrollT);scrollT=setTimeout(()=>markCurrent(currentSectionId()),120);},{passive:true});
+
+// minutes: full meeting minutes kept behind the passphrase
+function showView(v,id){
+  view=v==='docs'?'docs':'list';
+  if(id)docId=id;
+  document.getElementById('viewList').hidden=view!=='list';
+  document.getElementById('viewDocs').hidden=view!=='docs';
+  document.querySelectorAll('.views [role=tab]').forEach(b=>{const on=b.dataset.view===view;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false');});
+  try{history.replaceState(null,'',view==='docs'?'#minutes'+(docId?'/'+encodeURIComponent(docId):''):location.pathname+location.search);}catch(e){}
+  if(view==='docs')renderDocs();
+  const nav=document.querySelector('.views');
+  if(nav.getBoundingClientRect().top<0)nav.scrollIntoView({block:'start'});
+}
+function renderDocs(){
+  const box=document.getElementById('docs');
+  if(!DOCS.length){box.innerHTML='<p class="doc-empty">No minutes saved yet.</p>';return;}
+  const d=DOCS.find(x=>x.id===docId)||DOCS[0];docId=d.id;
+  const pick=DOCS.length>1?`<div class="seg doc-pick">${DOCS.map(x=>`<button type="button" data-doc="${esc(x.id)}" class="${x.id===d.id?'on':''}">${esc(x.title)}</button>`).join('')}</div>`:'';
+  const linked=allItems().filter(i=>i.doc===d.id),open=linked.filter(i=>!isDone(i)).length;
+  const secId=linked.length?linked[0].s:'',sec=SECTIONS.find(s=>s.id===secId);
+  const link=linked.length&&sec?`<div class="doc-link"><span>${linked.length} action items from these minutes are in the checklist under ${esc(sec.name)}. ${open?open+' still open.':'All done.'}</span><button type="button" class="linkish" data-goto="${esc(secId)}">Go to ${esc(sec.name)}</button></div>`:'';
+  const meta=(d.meta||[]).length?`<dl class="doc-meta">${d.meta.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:'';
+  const secs=d.sections||[];
+  const toc=secs.length>3?`<ol class="doc-toc">${secs.map((s,n)=>`<li><button type="button" data-anchor="${n+1}">${esc(s.h)}</button></li>`).join('')}</ol>`:'';
+  const body=secs.map((s,n)=>{
+    let inner='';
+    (s.groups||[]).forEach(g=>{inner+=(g.sub?`<h4>${esc(g.sub)}</h4>`:'')+`<ul>${(g.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`;});
+    if(s.table){const t=s.table;inner+=`<div class="doc-table"><table><thead><tr>${t.cols.map(c=>`<th scope="col">${esc(c)}</th>`).join('')}</tr></thead><tbody>${t.rows.map(r=>`<tr>${r.map((c,k)=>`<td>${k===0?`<span class="tag owner">${esc(c)}</span>`:esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+    return `<section class="doc-sec" id="doc-${esc(d.id)}-${n+1}"><h3><span class="n">${n+1}.</span><span>${esc(s.h)}</span></h3>${inner}</section>`;
+  }).join('');
+  const foot=[d.file?`Source file: ${esc(d.file)}`:'',d.added?`Added to the ledger ${esc(new Date(d.added+'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}`:''].filter(Boolean).join('. ');
+  box.innerHTML=`${pick}<article class="doc"><div class="doc-head"><div><h2 class="doc-title">${esc(d.title)}</h2>${d.subtitle?`<p class="doc-sub">${esc(d.subtitle)}</p>`:''}</div><button type="button" class="btn" data-print="1">Print minutes</button></div>${link}${meta}${toc}${body}${foot?`<p class="doc-foot">${foot}.</p>`:''}</article>`;
+}
+document.querySelector('.views').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(b)showView(b.dataset.view);});
+document.getElementById('docs').addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.doc){docId=t.dataset.doc;showView('docs',docId);return;}
+  if(t.dataset.goto){jumpToSection(t.dataset.goto);return;}
+  if(t.dataset.print){window.print();return;}
+  if(t.dataset.anchor){const s=document.getElementById(`doc-${docId}-${t.dataset.anchor}`);if(s)scrollToEl(s);}
+});
+document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('.doclink');if(b)showView('docs',b.dataset.doc);});
 </script>
 
 </body>
