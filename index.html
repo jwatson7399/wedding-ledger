@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light only">
+<meta name="color-scheme" content="light dark">
+<script>try{if(localStorage.getItem("wedding-ledger-theme")==="dark")document.documentElement.dataset.theme="dark";}catch(e){}</script>
 <title>Wedding Ledger</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Source+Sans+3:wght@400;600&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
@@ -19,7 +20,18 @@
     --grey2:#efece7;
     --dec:#ece7f5; --dec2:#5a4a8a; --noteBg:#fffdf9; --doneBg:#fcfbf8;
     --radius:12px;
-    color-scheme:light only;
+    color-scheme:light;
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --ink:#efe9e0; --ink2:#c2b8ab; --ink3:#8f867c;
+    --paper:#1c1917; --card:#26221f; --line:#3a342e; --line2:#4a423a;
+    --sand:#c9a06f; --sand2:#3a2f22; --sand3:#dcb98a;
+    --green:#8fcaa0; --green2:#22332a;
+    --red:#e08a8a; --red2:#3d2626;
+    --amber:#e0b060; --amber2:#3a3020;
+    --blue:#9fb8dd; --blue2:#25303f;
+    --grey2:#33302c; --dec:#33304a; --dec2:#c3b6e6; --noteBg:#2b2724; --doneBg:#211e1b;
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "Source Sans 3",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
@@ -44,7 +56,7 @@
   .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px;position:sticky;top:0;background:var(--paper);padding:10px 0;z-index:5;border-bottom:1px solid var(--line)}
   .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:var(--card)}
   .seg button{border:0;background:transparent;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink2)}
-  .seg button.on{background:var(--ink);color:#fff}
+  .seg button.on{background:var(--ink);color:var(--paper)}
   input[type=search],select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--card);color:var(--ink)}
   input[type=search]{flex:1;min-width:160px}
   #fSection{max-width:250px}
@@ -93,6 +105,10 @@
   .gate input,.gate select{font:inherit;font-size:15px;padding:9px 11px;border:1px solid var(--line2);border-radius:8px;background:var(--noteBg);color:var(--ink)}
   .gate .err{color:var(--red);font-size:13px;min-height:18px}
   .gate button{font:inherit;font-size:15px;padding:10px;border:0;border-radius:8px;background:var(--ink);color:var(--paper);cursor:pointer}
+  .themer{font:inherit;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line2);border-radius:20px;background:var(--card);color:var(--ink2);cursor:pointer}
+  .themer:hover{border-color:var(--sand);color:var(--ink)}
+  .themer .ic{width:12px;height:12px;border-radius:50%;background:var(--ink3);box-shadow:inset -3px -3px 0 0 var(--card)}
+  :root[data-theme="dark"] .themer .ic{background:var(--sand);box-shadow:none}
   .who{font-size:13px;color:var(--ink2);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .who b{color:var(--ink)}
   .who button{font:inherit;font-size:12px;background:none;border:0;color:var(--sand3);cursor:pointer;text-decoration:underline;padding:0}
@@ -266,7 +282,8 @@
     .plan{grid-column:1/3}
   }
   @media print{
-    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.views,.doc-link,.doc-toc,.plan,.pv-claim{display:none!important}
+    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.themer,.views,.doc-link,.doc-toc,.plan,.pv-claim{display:none!important}
+    :root[data-theme="dark"]{--paper:#fff;--card:#fff;--ink:#000;--ink2:#333;--ink3:#555}
     .doc{border:0;padding:0;max-width:none}
     body.drawer-open.docked .wrap{margin-right:auto}
     .item{break-inside:avoid;border:1px solid #ccc}
@@ -294,7 +311,7 @@
     <div class="count"><b id="days">0</b><span id="daysLabel">days to go</span></div>
   </header>
 
-  <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><button type="button" class="linkish" id="btnChanges">Recent changes<span class="n" id="chgCount" hidden></span></button><span class="who" id="who"></span></div>
+  <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><button type="button" class="linkish" id="btnChanges">Recent changes<span class="n" id="chgCount" hidden></span></button><button type="button" class="themer" id="btnTheme" aria-pressed="false"><span class="ic" aria-hidden="true"></span><span class="lbl">Dark</span></button><span class="who" id="who"></span></div>
   <nav class="views" role="tablist" aria-label="Ledger views">
     <button type="button" role="tab" id="vtList" data-view="list" aria-selected="true" aria-controls="viewList" class="on">Checklist</button>
     <button type="button" role="tab" id="vtJulian" data-view="Julian" aria-selected="false" aria-controls="viewPerson">Julian<span class="vt-n" id="nJulian"></span></button>
@@ -877,6 +894,20 @@ document.getElementById('docs').addEventListener('click',e=>{
   if(t.dataset.anchor){const s=document.getElementById(`doc-${docId}-${t.dataset.anchor}`);if(s)scrollToEl(s);}
 });
 ['list','person'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('.doclink');if(b)showView('docs',b.dataset.doc);}));
+
+// light by default; dark is a choice this device remembers
+const THEME_KEY='wedding-ledger-theme';
+function themeIsDark(){return document.documentElement.dataset.theme==='dark';}
+function applyTheme(dark){
+  if(dark)document.documentElement.dataset.theme='dark';else document.documentElement.removeAttribute('data-theme');
+  const b=document.getElementById('btnTheme');
+  b.setAttribute('aria-pressed',dark?'true':'false');
+  b.querySelector('.lbl').textContent=dark?'Light':'Dark';
+  b.setAttribute('aria-label',dark?'Switch to the light theme':'Switch to the dark theme');
+  try{localStorage.setItem(THEME_KEY,dark?'dark':'light');}catch(e){}
+}
+document.getElementById('btnTheme').addEventListener('click',()=>applyTheme(!themeIsDark()));
+applyTheme(themeIsDark());
 </script>
 
 </body>
