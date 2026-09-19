@@ -152,6 +152,35 @@
   .chg .nt{grid-column:2/4;font-size:12.5px;color:var(--ink2);border-left:2px solid var(--line2);padding:1px 0 1px 9px;margin-top:4px;font-style:italic}
   .chg-empty{color:var(--ink3);font-size:13px;padding:14px 12px}
 
+  /* assignment and goal date */
+  .plan{grid-column:2/4;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:9px;font-size:12px;color:var(--ink3)}
+  .plan-l{display:inline-flex;align-items:center;gap:7px}
+  .seg.mini button{padding:4px 10px;font-size:12px}
+  .seg.mini button.on{background:var(--ink);color:#fff}
+  .plan input[type=date]{font:inherit;font-size:12px;padding:4px 8px;border:1px solid var(--line2);border-radius:7px;background:var(--card);color:var(--ink)}
+  .tag.goal{background:var(--sand2);color:var(--sand3)}
+  .tag.goal.today{background:var(--amber2);color:var(--amber)}
+  .tag.goal.past{background:var(--red2);color:var(--red)}
+  .tag.secjump{font:inherit;font-size:11.5px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--ink2)}
+  .tag.secjump:hover{border-color:var(--sand);color:var(--sand3)}
+  .tag.mine{background:var(--green2);color:var(--green)}
+
+  /* a person's list */
+  .pv-head{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline}
+  .pv-head h2{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:23px;margin:0}
+  .pv-sum{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink2);margin-top:4px}
+  .pv-sum .od{color:var(--red)}
+  .pv-sum .nd{color:var(--sand3)}
+  .pv-claim{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--sand2);border-radius:var(--radius);padding:11px 14px;margin:14px 0 4px;font-size:13px;color:var(--ink2)}
+  .bucket{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
+  .bucket h3{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:17px;margin:0}
+  .bucket.past h3{color:var(--red)}
+  .bucket.today h3{color:var(--amber)}
+  .bucket small{font-size:12px;color:var(--ink3)}
+  .pv-empty{background:var(--card);border:1px dashed var(--line2);border-radius:var(--radius);padding:20px;color:var(--ink2);font-size:14px;line-height:1.6;max-width:62ch}
+  .pv-done{margin-top:26px}
+  .pv-done summary{cursor:pointer;color:var(--ink3);font-size:13px;margin-bottom:10px}
+
   /* top level views */
   .views{display:flex;gap:24px;border-bottom:1px solid var(--line);margin:0 0 18px}
   .views button{font:inherit;font-size:15px;font-weight:600;background:none;border:0;padding:8px 2px 10px;margin-bottom:-1px;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
@@ -234,9 +263,10 @@
     .item .del{grid-column:2}
     .addbox{grid-template-columns:1fr 1fr}
     .addbox input:first-child{grid-column:1/3}
+    .plan{grid-column:1/3}
   }
   @media print{
-    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.views,.doc-link,.doc-toc{display:none!important}
+    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.views,.doc-link,.doc-toc,.plan,.pv-claim{display:none!important}
     .doc{border:0;padding:0;max-width:none}
     body.drawer-open.docked .wrap{margin-right:auto}
     .item{break-inside:avoid;border:1px solid #ccc}
@@ -267,6 +297,8 @@
   <div class="sync" id="sync"><i></i><span id="syncText">Connecting</span><span class="spacer"></span><button type="button" class="linkish" id="btnChanges">Recent changes<span class="n" id="chgCount" hidden></span></button><span class="who" id="who"></span></div>
   <nav class="views" role="tablist" aria-label="Ledger views">
     <button type="button" role="tab" id="vtList" data-view="list" aria-selected="true" aria-controls="viewList" class="on">Checklist</button>
+    <button type="button" role="tab" id="vtJulian" data-view="Julian" aria-selected="false" aria-controls="viewPerson">Julian<span class="vt-n" id="nJulian"></span></button>
+    <button type="button" role="tab" id="vtKristine" data-view="Kristine" aria-selected="false" aria-controls="viewPerson">Kristine<span class="vt-n" id="nKristine"></span></button>
     <button type="button" role="tab" id="vtDocs" data-view="docs" aria-selected="false" aria-controls="viewDocs">Documents<span class="vt-n" id="docCount"></span></button>
   </nav>
 
@@ -321,6 +353,8 @@
   </div>
   </div>
 
+  <div id="viewPerson" role="tabpanel" aria-labelledby="vtJulian" hidden><div id="person"></div></div>
+
   <div id="viewDocs" role="tabpanel" aria-labelledby="vtDocs" hidden><div id="docs"></div></div>
 
   <footer>
@@ -364,7 +398,7 @@ const SB_URL='https://wrrsgmsvzfjgawetuyvd.supabase.co';
 const SB_KEY='sb_publishable_7SHqeVM7J9KBO98obNcu7g_ZedK6cKq';
 const KEY='wedding-ledger-live';
 const fs=document.getElementById('fSection'),as=document.getElementById('aSection');
-const BLANK=()=>({checked:{},notes:{},custom:[],removed:{},meta:{},log:[]});
+const BLANK=()=>({checked:{},notes:{},assign:{},goal:{},custom:[],removed:{},meta:{},log:[]});
 let state=BLANK();
 let sb=null, chan=null, me={name:'',pass:''}, mode='loading', noteTimers={}, pollTimer=null;
 const syncEl=document.getElementById('sync'), syncText=document.getElementById('syncText');
@@ -395,7 +429,7 @@ function applyRead(d){
   if(Array.isArray(d.docs)){DOCS=d.docs;document.getElementById('docCount').textContent=DOCS.length?String(DOCS.length):'';}
   if(fs.options.length<=1){SECTIONS.forEach(s=>{fs.add(new Option(s.name,s.id));as.add(new Option(s.name,s.id));});}
   const st=BLANK();
-  (d.state||[]).forEach(r=>{if(r.done!==null&&r.done!==undefined)st.checked[r.item_id]=!!r.done;if(r.note)st.notes[r.item_id]=r.note;st.meta[r.item_id]={by:r.by,at:r.at};});
+  (d.state||[]).forEach(r=>{if(r.done!==null&&r.done!==undefined)st.checked[r.item_id]=!!r.done;if(r.note)st.notes[r.item_id]=r.note;if(r.assignee)st.assign[r.item_id]=r.assignee;if(r.goal)st.goal[r.item_id]=r.goal;st.meta[r.item_id]={by:r.by,at:r.at};});
   (d.custom||[]).forEach(c=>{if(c.removed){st.removed[c.id]=true;return;}const it={id:c.id,s:c.s,t:c.t,owner:c.owner,src:'Added by '+c.by,custom:true};if(c.a){it.a=+c.a;it.pay=true;}st.custom.push(it);});
   st.log=d.log||[];
   state=st;
@@ -416,6 +450,29 @@ async function write(fn,args,label){
   catch(e){if(e.message==='bad_pass'){lock('The passphrase no longer works. Enter it again.');}else{setSync('local','That change did not save. Check your connection and try again.');await refresh(true);}}
 }
 function setDone(id,done){state.checked[id]=done;render();write('ledger_set',{p_name:me.name,p_item:id,p_done:done,p_note:null},done?'Checked. Saved for both of you.':'Unchecked. Saved for both of you.');}
+function setAssign(id,who){
+  if(who)state.assign[id]=who;else delete state.assign[id];
+  render();
+  write('ledger_assign',{p_name:me.name,p_item:id,p_who:who||''},who?('Assigned to '+who+'.'):'Assignment cleared.');
+}
+function setGoal(id,date){
+  if(date)state.goal[id]=date;else delete state.goal[id];
+  render();
+  write('ledger_goal',{p_name:me.name,p_item:id,p_goal:date||''},date?'Date saved.':'Date cleared.');
+}
+async function claimOwned(name){
+  const mine=allItems().filter(i=>!isDone(i)&&!assigneeOf(i)&&i.owner===name);
+  if(!mine.length)return;
+  if(!confirm(`Assign ${mine.length} open ${mine.length===1?'item':'items'} to ${name}? You can change any of them afterwards.`))return;
+  let n=0;
+  for(const i of mine){
+    setSync('saving',`Assigning ${++n} of ${mine.length}`);
+    try{await rpc('ledger_assign',{p_name:me.name,p_item:i.id,p_who:name});}
+    catch(e){setSync('local','That did not save. Check your connection and try again.');await refresh(true);return;}
+  }
+  announce();await refresh(true);
+  setSync('shared',`${mine.length} ${mine.length===1?'item':'items'} assigned to ${name}.`);
+}
 function setNote(id,text){state.notes[id]=text;clearTimeout(noteTimers[id]);noteTimers[id]=setTimeout(()=>write('ledger_set',{p_name:me.name,p_item:id,p_done:null,p_note:text},'Note saved for both of you.'),900);}
 function lock(msg){
   clearInterval(pollTimer);if(chan){try{sb.removeChannel(chan);}catch(e){}chan=null;}
@@ -429,6 +486,8 @@ async function unlock(name,pass){
   catch(e){me={name:'',pass:''};document.getElementById('gErr').textContent=e.message==='bad_pass'?'That passphrase is not right.':'Could not reach the ledger. Try again in a moment.';return false;}
   writeCreds();document.getElementById('gate').hidden=true;document.getElementById('fab').hidden=false;render();
   if(location.hash.indexOf('#minutes')===0)showView('docs',decodeURIComponent(location.hash.split('/')[1]||''));
+  else if(location.hash==='#julian')showView('Julian');
+  else if(location.hash==='#kristine')showView('Kristine');
   setSync('shared','Live. Changes save for both of you as you make them.');
   document.getElementById('who').innerHTML=`Signed in as <b>${me.name}</b> <button id="btnOut" type="button">not you?</button>`;
   document.getElementById('btnOut').addEventListener('click',()=>lock(''));
@@ -450,6 +509,18 @@ document.getElementById('gateForm').addEventListener('submit',async e=>{
 })();
 function allItems(){return ITEMS.concat(state.custom).filter(i=>!state.removed[i.id]);}
 function isDone(i){return state.checked.hasOwnProperty(i.id)?!!state.checked[i.id]:!!i.done;}
+function assigneeOf(i){return state.assign[i.id]||'';}
+function goalOf(i){return state.goal[i.id]||'';}
+function dayDiff(ymd){const p=String(ymd).split('-');return Math.round((new Date(+p[0],+p[1]-1,+p[2])-today())/864e5);}
+function goalInfo(ymd){
+  const diff=dayDiff(ymd),d=new Date(),p=String(ymd).split('-');
+  const dt=new Date(+p[0],+p[1]-1,+p[2]);
+  const short=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(diff<0)return {diff,cls:'past',label:short,long:'Overdue',suffix:' ('+(-diff)+'d late)'};
+  if(diff===0)return {diff,cls:'today',label:'today',long:'Today',suffix:''};
+  if(diff===1)return {diff,cls:'',label:'tomorrow',long:'Tomorrow',suffix:''};
+  return {diff,cls:'',label:short,long:dt.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}),suffix:''};
+}
 const money=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const today=()=>{const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());};
 function dueInfo(i){
@@ -464,6 +535,86 @@ let filt={status:'all',owner:'',section:'',q:''};
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fmtAt(a){try{return new Date(a).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}catch(e){return '';}}
 
+function itemEl(i,opts){
+  opts=opts||{};
+  const d=isDone(i),di=dueInfo(i),who=assigneeOf(i),gl=goalOf(i);
+  const el=document.createElement('div');
+  el.dataset.id=i.id;
+  el.className='item'+(d?' done':'')+(!d&&di&&di.diff<=0?' overdue':(!d&&di&&di.diff<=5?' due-soon':''));
+  let tags='';
+  if(opts.section){const s=SECTIONS.find(s=>s.id===i.s);if(s)tags+=`<button type="button" class="tag secjump" data-sec="${esc(i.s)}" title="Show this section in the checklist">${esc(s.name)}</button>`;}
+  tags+=`<span class="tag owner">${esc(i.owner||'Both')}</span>`;
+  if(!opts.section&&who)tags+=`<span class="tag mine">${esc(who)}</span>`;
+  if(gl&&!d){const gi=goalInfo(gl);tags+=`<span class="tag goal ${gi.cls}">by ${gi.label}${gi.suffix}</span>`;}
+  if(di)tags+=`<span class="tag due ${d?'ok':(di.diff<=0?'past':'')}">${d?'was due ':'due '}${di.label}${!d&&di.diff<0?' ('+(-di.diff)+'d overdue)':(!d&&di.diff===0?' (today)':'')}</span>`;
+  if(i.dec)tags+=`<span class="tag dec">decision</span>`;
+  if(i.flag)tags+=`<span class="tag flag">${i.src==='Not in workbook'?'not in workbook':'unpriced'}</span>`;
+  if(i.src)tags+=i.doc?`<button type="button" class="tag src doclink" data-doc="${esc(i.doc)}" title="Open the source document">${esc(i.src)}</button>`:`<span class="tag src">${esc(i.src)}</span>`;
+  const mt=state.meta[i.id];if(mt&&mt.by)tags+=`<span class="tag by">${esc(mt.by)}, ${fmtAt(mt.at)}</span>`;
+  const amt=i.a?`<div class="amt">${money(i.a)}<small>${d?(i.pay?'paid':'amount'):(i.pay?'still owed':'amount')}</small></div>`:'<div></div>';
+  const plan=`<div class="plan">
+      <span class="plan-l">Assigned to
+        <span class="seg mini">${['Julian','Kristine'].map(n=>`<button type="button" data-who="${n}" class="${who===n?'on':''}" aria-pressed="${who===n?'true':'false'}">${n}</button>`).join('')}</span>
+      </span>
+      <label class="plan-l">Do it by <input type="date" class="goal" value="${esc(gl)}" aria-label="Goal date for this item"></label>
+    </div>`;
+  el.innerHTML=`<input type="checkbox" class="chk" ${d?'checked':''} aria-label="Mark done">
+    <div><div class="t">${esc(i.t)}</div>${i.m?`<div class="m">${esc(i.m)}</div>`:''}<div class="tags">${tags}</div></div>
+    ${amt}
+    ${plan}
+    <div class="note"><textarea rows="1" placeholder="Your note (saved automatically)">${esc(state.notes[i.id]||'')}</textarea></div>
+    ${i.custom?'<button class="del">remove</button>':''}`;
+  el.querySelector('.chk').addEventListener('change',e=>{setDone(i.id,e.target.checked);});
+  el.querySelector('textarea').addEventListener('input',e=>{setNote(i.id,e.target.value);});
+  el.querySelectorAll('.plan [data-who]').forEach(b=>b.addEventListener('click',()=>{setAssign(i.id,who===b.dataset.who?'':b.dataset.who);}));
+  el.querySelector('.plan .goal').addEventListener('change',e=>{setGoal(i.id,e.target.value);});
+  const sj=el.querySelector('.secjump');if(sj)sj.addEventListener('click',()=>jumpToSection(i.s));
+  const del=el.querySelector('.del');if(del)del.addEventListener('click',()=>{write('ledger_remove',{p_name:me.name,p_id:i.id},'Removed.');});
+  return el;
+}
+function renderPerson(name){
+  const box=document.getElementById('person');box.innerHTML='';
+  const mine=allItems().filter(i=>assigneeOf(i)===name);
+  const open=mine.filter(i=>!isDone(i)),done=mine.filter(i=>isDone(i));
+  const overdue=open.filter(i=>goalOf(i)&&dayDiff(goalOf(i))<0).length;
+  const nodate=open.filter(i=>!goalOf(i)).length;
+  const claimable=allItems().filter(i=>!isDone(i)&&!assigneeOf(i)&&i.owner===name).length;
+  const head=document.createElement('div');
+  head.innerHTML=`<div class="pv-head"><h2>${esc(name)}</h2></div>
+    <div class="pv-sum"><span><b>${open.length}</b> still to do</span>${overdue?`<span class="od">${overdue} past the date you set</span>`:''}${nodate?`<span class="nd">${nodate} with no date yet</span>`:''}<span>${done.length} done</span></div>`;
+  box.appendChild(head);
+  if(claimable){
+    const c=document.createElement('div');c.className='pv-claim';
+    c.innerHTML=`<span>${claimable} open ${claimable===1?'item is':'items are'} marked as ${esc(name)}'s in the ledger but not assigned yet.</span><button type="button" class="btn" data-claim="${esc(name)}">Assign ${claimable===1?'it':'them all'} to ${esc(name)}</button>`;
+    c.querySelector('[data-claim]').addEventListener('click',()=>claimOwned(name));
+    box.appendChild(c);
+  }
+  if(!open.length&&!done.length){
+    const e=document.createElement('div');e.className='pv-empty';
+    e.innerHTML=`Nothing is assigned to ${esc(name)} yet. Open the checklist and tap ${esc(name)} under any item to put it here, or use the button above to take everything the ledger already says is ${esc(name)}'s. Add a date to anything you want to pin to a day.`;
+    box.appendChild(e);
+  }
+  const late=[],dated=new Map(),undated=[];
+  open.forEach(i=>{const g=goalOf(i);if(!g){undated.push(i);return;}if(dayDiff(g)<0){late.push(i);return;}if(!dated.has(g))dated.set(g,[]);dated.get(g).push(i);});
+  const bySrcDue=(a,b)=>String(a.due||'9999').localeCompare(String(b.due||'9999'))||String(a.t).localeCompare(String(b.t));
+  const bucket=(title,items,cls)=>{
+    if(!items.length)return;
+    const hd=document.createElement('div');hd.className='bucket'+(cls?' '+cls:'');
+    hd.innerHTML=`<h3>${esc(title)}</h3><small>${items.length} ${items.length===1?'item':'items'}</small>`;
+    box.appendChild(hd);
+    items.sort(bySrcDue).forEach(i=>box.appendChild(itemEl(i,{section:true})));
+  };
+  bucket('Past the date you set',late,'past');
+  [...dated.keys()].sort().forEach(g=>{const gi=goalInfo(g);bucket(gi.long,dated.get(g),gi.diff===0?'today':'');});
+  bucket('No date set',undated);
+  if(done.length){
+    const d=document.createElement('details');d.className='pv-done';
+    d.innerHTML=`<summary>${done.length} done</summary>`;
+    const wrap=document.createElement('div');
+    done.sort(bySrcDue).forEach(i=>wrap.appendChild(itemEl(i,{section:true})));
+    d.appendChild(wrap);box.appendChild(d);
+  }
+}
 function render(){
   const list=document.getElementById('list');list.innerHTML='';
   const items=allItems();
@@ -484,29 +635,7 @@ function render(){
     const openCash=all.filter(i=>!isDone(i)&&i.pay&&i.a).reduce((s,i)=>s+i.a,0);
     const g=document.createElement('section');g.className='grp';g.id='sec-'+sec.id;
     g.innerHTML=`<h2>${sec.name} <small>${done} of ${all.length} done</small>${cashText(sec.id,openCash,'still to pay')?`<span class="money">${cashText(sec.id,openCash,'still to pay')}</span>`:''}</h2><p class="desc">${sec.desc}</p>`;
-    rows.forEach(i=>{
-      shown++;
-      const d=isDone(i),di=dueInfo(i);
-      const el=document.createElement('div');
-      el.dataset.id=i.id;
-      el.className='item'+(d?' done':'')+(!d&&di&&di.diff<=0?' overdue':(!d&&di&&di.diff<=5?' due-soon':''));
-      let tags=`<span class="tag owner">${i.owner||'Both'}</span>`;
-      if(di)tags+=`<span class="tag due ${d?'ok':(di.diff<0?'past':(di.diff===0?'past':''))}">${d?'was due ':'due '}${di.label}${!d&&di.diff<0?' ('+(-di.diff)+'d overdue)':(!d&&di.diff===0?' (today)':'')}</span>`;
-      if(i.dec)tags+=`<span class="tag dec">decision</span>`;
-      if(i.flag)tags+=`<span class="tag flag">${i.src==='Not in workbook'?'not in workbook':'unpriced'}</span>`;
-      if(i.src)tags+=i.doc?`<button type="button" class="tag src doclink" data-doc="${esc(i.doc)}" title="Open these minutes">${esc(i.src)}</button>`:`<span class="tag src">${esc(i.src)}</span>`;
-      const mt=state.meta[i.id];if(mt&&mt.by)tags+=`<span class="tag by">${mt.by}, ${fmtAt(mt.at)}</span>`;
-      const amt=i.a?`<div class="amt">${money(i.a)}<small>${d?(i.pay?'paid':'amount'):(i.pay?'still owed':'amount')}</small></div>`:'<div></div>';
-      el.innerHTML=`<input type="checkbox" class="chk" ${d?'checked':''} aria-label="Mark done">
-        <div><div class="t">${esc(i.t)}</div>${i.m?`<div class="m">${esc(i.m)}</div>`:''}<div class="tags">${tags}</div></div>
-        ${amt}
-        <div class="note"><textarea rows="1" placeholder="Your note (saved automatically)">${esc(state.notes[i.id]||'')}</textarea></div>
-        ${i.custom?'<button class="del">remove</button>':''}`;
-      el.querySelector('.chk').addEventListener('change',e=>{setDone(i.id,e.target.checked);});
-      el.querySelector('textarea').addEventListener('input',e=>{setNote(i.id,e.target.value);});
-      const del=el.querySelector('.del');if(del)del.addEventListener('click',()=>{write('ledger_remove',{p_name:me.name,p_id:i.id},'Removed.');});
-      g.appendChild(el);
-    });
+    rows.forEach(i=>{shown++;g.appendChild(itemEl(i));});
     list.appendChild(g);
   });
   if(!shown)list.innerHTML='<div class="empty">Nothing matches this view.</div>';
@@ -531,9 +660,11 @@ function stats(){
   document.getElementById('barText').textContent=`${done} of ${items.length} items complete`;
   document.getElementById('barPct').textContent=pct+'%';
   document.getElementById('ready').style.display=open.length?'none':'block';
+  ['Julian','Kristine'].forEach(n=>{const el=document.getElementById('n'+n);if(el){const c=allItems().filter(i=>assigneeOf(i)===n&&!isDone(i)).length;el.textContent=c?String(c):'';}});
   updateBadge();
   if(document.body.classList.contains('drawer-open'))renderDrawer();
   if(view==='docs')renderDocs();
+  if(view==='Julian'||view==='Kristine')renderPerson(view);
   const de=document.getElementById('days'),dl=document.getElementById('daysLabel');
   if(!WEDDING){de.textContent='';dl.textContent='';return;}
   const dd=Math.round((WEDDING-today())/864e5);
@@ -555,7 +686,7 @@ document.getElementById('btnAdd').addEventListener('click',()=>{
   write('ledger_add',{p_name:me.name,p_id:'custom-'+Date.now(),p_section:as.value,p_title:t,p_amount:a>0?a:null,p_owner:document.getElementById('aOwner').value},'Added for both of you.');
 });
 document.getElementById('btnReset').addEventListener('click',()=>{
-  if(!confirm('Reset every checkmark and note, for both of you, to the state recorded in the workbook on Sept 12?'))return;
+  if(!confirm('Reset every checkmark, note, assignment and date, for both of you, to the state recorded in the workbook on Sept 12?'))return;
   write('ledger_reset',{p_name:me.name},'Reset for both of you.');
 });
 
@@ -625,7 +756,7 @@ function renderToc(){
   }).join('');
   document.getElementById('paneToc').innerHTML=`<div class="toc-key" aria-hidden="true"><span><i style="background:var(--green)"></i>Done</span><span><i style="background:var(--amber)"></i>Due soon</span><span><i style="background:var(--red)"></i>Overdue</span><span><i style="background:var(--line2)"></i>Open</span></div>`+rows;
 }
-const VERB={check:'checked',uncheck:'unchecked',add:'added',remove:'removed',reset:'reset the ledger',seed:'carried over progress'};
+const VERB={check:'checked',uncheck:'unchecked',add:'added',remove:'removed',reset:'reset the ledger',seed:'carried over progress',assign:'assigned',unassign:'took the assignment off',goal:'set a date on',ungoal:'cleared the date on'};
 function dayLabel(d){
   const t=today(),x=new Date(d.getFullYear(),d.getMonth(),d.getDate()),diff=Math.round((t-x)/864e5);
   if(diff===0)return 'Today';if(diff===1)return 'Yesterday';
@@ -644,10 +775,11 @@ function renderChanges(){
     const it=r.item_id?byId[r.item_id]:null;
     let verb=VERB[r.action]||r.action;
     if(r.action==='note')verb=r.detail?'added a note to':'cleared the note on';
+    if(r.action==='assign'&&r.detail)verb='assigned '+r.detail;
     const title=it?it.t:(r.action==='add'?(r.detail||'an item'):(r.action==='remove'?'an item':''));
     const isNew=r.who!==me.name&&r.action!=='seed'&&d.getTime()>seenT;
     const time=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    const note=(r.action==='note'||r.action==='seed')&&r.detail?`<span class="nt">${esc(r.detail.slice(0,200))}</span>`:'';
+    const note=(r.action==='note'||r.action==='seed')&&r.detail?`<span class="nt">${esc(r.detail.slice(0,200))}</span>`:(r.action==='goal'&&r.detail?`<span class="nt">by ${esc(r.detail)}</span>`:'');
     const shortT=title.length>90?title.slice(0,88)+'...':title;
     const inner=`<span class="av${r.who==='Kristine'?' k':''}" aria-hidden="true">${esc((r.who||'?').charAt(0))}</span><span><b>${esc(r.who)}</b> ${esc(verb)}${title?` <span class="it">${esc(shortT)}</span>`:''}</span><time datetime="${esc(r.at)}">${time}</time>${note}`;
     const jump=it&&!state.removed[it.id];
@@ -695,12 +827,16 @@ let scrollT=null;window.addEventListener('scroll',()=>{if(!isOpen()||drawerTab!=
 
 // minutes: full meeting minutes kept behind the passphrase
 function showView(v,id){
-  view=v==='docs'?'docs':'list';
+  view=(v==='docs'||v==='Julian'||v==='Kristine')?v:'list';
   if(id)docId=id;
+  const person=view==='Julian'||view==='Kristine';
   document.getElementById('viewList').hidden=view!=='list';
+  document.getElementById('viewPerson').hidden=!person;
   document.getElementById('viewDocs').hidden=view!=='docs';
+  if(person)renderPerson(view);
   document.querySelectorAll('.views [role=tab]').forEach(b=>{const on=b.dataset.view===view;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false');});
-  try{history.replaceState(null,'',view==='docs'?'#minutes'+(docId?'/'+encodeURIComponent(docId):''):location.pathname+location.search);}catch(e){}
+  const hash=view==='docs'?'#minutes'+(docId?'/'+encodeURIComponent(docId):''):(view==='list'?'':'#'+view.toLowerCase());
+  try{history.replaceState(null,'',hash||location.pathname+location.search);}catch(e){}
   if(view==='docs')renderDocs();
   const nav=document.querySelector('.views');
   if(nav.getBoundingClientRect().top<0)nav.scrollIntoView({block:'start'});
@@ -740,7 +876,7 @@ document.getElementById('docs').addEventListener('click',e=>{
   if(t.dataset.print){window.print();return;}
   if(t.dataset.anchor){const s=document.getElementById(`doc-${docId}-${t.dataset.anchor}`);if(s)scrollToEl(s);}
 });
-document.getElementById('list').addEventListener('click',e=>{const b=e.target.closest('.doclink');if(b)showView('docs',b.dataset.doc);});
+['list','person'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('.doclink');if(b)showView('docs',b.dataset.doc);}));
 </script>
 
 </body>
