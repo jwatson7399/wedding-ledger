@@ -187,7 +187,6 @@
   .pv-sum{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink2);margin-top:4px}
   .pv-sum .od{color:var(--red)}
   .pv-sum .nd{color:var(--sand3)}
-  .pv-claim{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--sand2);border-radius:var(--radius);padding:11px 14px;margin:14px 0 4px;font-size:13px;color:var(--ink2)}
   .bucket{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:22px 0 8px}
   .bucket h3{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:17px;margin:0}
   .bucket.past h3{color:var(--red)}
@@ -282,7 +281,7 @@
     .plan{grid-column:1/3}
   }
   @media print{
-    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.themer,.views,.doc-link,.doc-toc,.plan,.pv-claim{display:none!important}
+    .controls,.addbox,.btn,footer .actions,.fab,.drawer,.scrim,#btnChanges,.themer,.views,.doc-link,.doc-toc,.plan{display:none!important}
     :root[data-theme="dark"]{--paper:#fff;--card:#fff;--ink:#000;--ink2:#333;--ink3:#555}
     .doc{border:0;padding:0;max-width:none}
     body.drawer-open.docked .wrap{margin-right:auto}
@@ -477,19 +476,6 @@ function setGoal(id,date){
   render();
   write('ledger_goal',{p_name:me.name,p_item:id,p_goal:date||''},date?'Date saved.':'Date cleared.');
 }
-async function claimOwned(name){
-  const mine=allItems().filter(i=>!isDone(i)&&!assigneeOf(i)&&i.owner===name);
-  if(!mine.length)return;
-  if(!confirm(`Assign ${mine.length} open ${mine.length===1?'item':'items'} to ${name}? You can change any of them afterwards.`))return;
-  let n=0;
-  for(const i of mine){
-    setSync('saving',`Assigning ${++n} of ${mine.length}`);
-    try{await rpc('ledger_assign',{p_name:me.name,p_item:i.id,p_who:name});}
-    catch(e){setSync('local','That did not save. Check your connection and try again.');await refresh(true);return;}
-  }
-  announce();await refresh(true);
-  setSync('shared',`${mine.length} ${mine.length===1?'item':'items'} assigned to ${name}.`);
-}
 function setNote(id,text){state.notes[id]=text;clearTimeout(noteTimers[id]);noteTimers[id]=setTimeout(()=>write('ledger_set',{p_name:me.name,p_item:id,p_done:null,p_note:text},'Note saved for both of you.'),900);}
 function lock(msg){
   clearInterval(pollTimer);if(chan){try{sb.removeChannel(chan);}catch(e){}chan=null;}
@@ -595,20 +581,13 @@ function renderPerson(name){
   const open=mine.filter(i=>!isDone(i)),done=mine.filter(i=>isDone(i));
   const overdue=open.filter(i=>goalOf(i)&&dayDiff(goalOf(i))<0).length;
   const nodate=open.filter(i=>!goalOf(i)).length;
-  const claimable=allItems().filter(i=>!isDone(i)&&!assigneeOf(i)&&i.owner===name).length;
   const head=document.createElement('div');
   head.innerHTML=`<div class="pv-head"><h2>${esc(name)}</h2></div>
     <div class="pv-sum"><span><b>${open.length}</b> still to do</span>${overdue?`<span class="od">${overdue} past the date you set</span>`:''}${nodate?`<span class="nd">${nodate} with no date yet</span>`:''}<span>${done.length} done</span></div>`;
   box.appendChild(head);
-  if(claimable){
-    const c=document.createElement('div');c.className='pv-claim';
-    c.innerHTML=`<span>${claimable} open ${claimable===1?'item is':'items are'} marked as ${esc(name)}'s in the ledger but not assigned yet.</span><button type="button" class="btn" data-claim="${esc(name)}">Assign ${claimable===1?'it':'them all'} to ${esc(name)}</button>`;
-    c.querySelector('[data-claim]').addEventListener('click',()=>claimOwned(name));
-    box.appendChild(c);
-  }
   if(!open.length&&!done.length){
     const e=document.createElement('div');e.className='pv-empty';
-    e.innerHTML=`Nothing is assigned to ${esc(name)} yet. Open the checklist and tap ${esc(name)} under any item to put it here, or use the button above to take everything the ledger already says is ${esc(name)}'s. Add a date to anything you want to pin to a day.`;
+    e.innerHTML=`Nothing is assigned to ${esc(name)} yet. Open the checklist and tap ${esc(name)} under any item to put it here. Add a date to anything you want to pin to a day.`;
     box.appendChild(e);
   }
   const late=[],dated=new Map(),undated=[];
